@@ -96,18 +96,30 @@
         updateUI();
     }
 
-    function win() {
-        player.gold += monster.gold;
-        let dMsg = "";
-        if (Math.random() > 0.4) {
-            player.inv[monster.drop] = (player.inv[monster.drop] || 0) + 1;
-            dMsg = ` [${monster.drop} 획득!]`;
-        }
-        addLog(`✅ ${monster.name} 처치! +${monster.gold}G${dMsg}`);
-        player.lv++;
-        spawn();
-        save();
-    }
+	function win() {
+		player.gold += monster.gold;
+		
+		// --- 체력 50% 회복 로직 추가 ---
+		const recoveryAmount = Math.floor(player.maxHp * 0.5); // 최대 체력의 50% 계산
+		player.hp += recoveryAmount;
+		
+		// 최대 체력을 초과하지 않도록 보정
+		if (player.hp > player.maxHp) {
+			player.hp = player.maxHp;
+		}
+		addLog(`💖 승리 보너스! 정신력이 ${recoveryAmount}만큼 회복되었습니다.`);
+		// ----------------------------
+
+		let dMsg = "";
+		if (Math.random() > 0.4) {
+			player.inv[monster.drop] = (player.inv[monster.drop] || 0) + 1;
+			dMsg = ` [${monster.drop} 획득!]`;
+		}
+		addLog(`✅ ${monster.name} 처치! +${monster.gold}G${dMsg}`);
+		player.lv++;
+		spawn();
+		save();
+	}
 
     function spawn() {
         const isRare = Math.random() < 0.15;
