@@ -11,21 +11,20 @@
         .title { color: #ffff00; font-weight: bold; border-bottom: 1px solid #333; display: block; margin-bottom: 5px; }
         #log-window { height: 150px; overflow-y: auto; font-size: 13px; color: #aaa; border-top: 1px solid #333; padding-top: 5px; display: flex; flex-direction: column-reverse; }
         button { background: #00ff41; color: #000; border: none; padding: 8px; cursor: pointer; font-weight: bold; margin: 2px; }
-        button:disabled { background: #114411; color: #004411; }
+        button:disabled { background: #114411; color: #004411; cursor: not-allowed; }
         
-        /* UI 요소 */
-        .hp-bar-bg { width: 100%; height: 12px; background: #333; margin: 5px 0; }
+        /* 체력바 */
+        .hp-bar-bg { width: 100%; height: 12px; background: #333; margin: 5px 0; border: 1px solid #444; }
         .hp-fill { height: 100%; background: #ff3e3e; transition: width 0.3s; }
         .p-hp-fill { background: #00ff41; }
 
-        /* 팝업 UI */
+        /* 도감 및 엔딩 UI */
         #book-ui, #ending-ui { display: none; position: absolute; top: 10px; left: 10px; right: 10px; bottom: 10px; z-index: 200; padding: 20px; border: 2px solid #00ff41; overflow-y: auto; }
         #book-ui { background: rgba(0,20,0,0.95); }
-        
-        /* 해탈 엔딩 레이어 */
-        #ending-ui { background: #fff; color: #000; border-color: #ffd700; text-align: center; display: none; }
+        #ending-ui { background: #fff; color: #000; border-color: #ffd700; text-align: center; }
         #ending-ui h1 { font-size: 3rem; margin-top: 50px; }
 
+        /* 게임오버 레이어 */
         #game-over { display: none; position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.9); color: red; text-align: center; padding-top: 120px; z-index: 100; }
         .collected { color: #ffff00; }
         .unknown { color: #444; }
@@ -36,6 +35,7 @@
 <div id="game-container">
     <div id="game-over">
         <h1>인생 하직</h1>
+        <p>멘탈이 가루가 되었습니다.</p>
         <button onclick="revive()" style="background: red; color: white;">정신 차리기 (자존심 20% 차감)</button>
     </div>
 
@@ -47,10 +47,9 @@
 
     <div id="ending-ui">
         <h1>[ 解脫 ]</h1>
-        <p style="font-size: 1.2rem; font-weight: bold;">모든 번뇌(빌런)를 멸하였습니다.</p>
-        <p>당신은 이제 출근도, 사직서도, 눅눅한 치킨도 없는<br>진정한 평화의 경지에 도달했습니다.</p>
-        <div style="margin: 30px 0; font-size: 0.9rem;">(모든 데이터가 초기화되며 보너스 능력치를 얻습니다)</div>
-        <button onclick="rebirth()" style="background: #000; color: #ffd700; padding: 15px; font-size: 1.1rem;">환생하여 다시 시작하기</button>
+        <p style="font-size: 1.2rem; font-weight: bold;">모든 번뇌를 멸하였습니다.</p>
+        <p>축하합니다! 당신은 진정한 평온에 도달했습니다.</p>
+        <button onclick="rebirth()" style="background: #000; color: #ffd700; padding: 15px; margin-top: 20px;">보너스를 받고 환생하기</button>
     </div>
 
     <h2 style="text-align: center; color: #ffff00;">🤪 병맛 빌런 사냥터 🤪</h2>
@@ -58,7 +57,7 @@
     <div class="panel">
         <span class="title">[ 내 상태 ]</span>
         <p>정신력: <span id="p-hp">100</span>/<span id="p-max">100</span> | 전투력: <span id="atk">10</span></p>
-        <div class="hp-bar-bg"><div id="p-hp-bar" class="hp-fill p-hp-fill"></div></div>
+        <div class="hp-bar-bg"><div id="p-hp-bar" class="hp-fill p-hp-fill" style="width: 100%;"></div></div>
         <p>자존심: <span id="gold">0</span>G | 환생: <span id="re-count">0</span>회 <button onclick="toggleBook()" style="font-size: 10px; padding: 3px;">📕 도감보기</button></p>
     </div>
 
@@ -66,11 +65,11 @@
         <span class="title">[ 오늘의 빌런 ]</span>
         <p id="m-name">대상: 탐색 중...</p>
         <p>멘탈: <span id="m-hp">0</span>/<span id="m-max">0</span></p>
-        <div class="hp-bar-bg"><div id="m-hp-bar" class="hp-fill"></div></div>
+        <div class="hp-bar-bg"><div id="m-hp-bar" class="hp-fill" style="width: 0%;"></div></div>
     </div>
 
     <div class="panel">
-        <span class="title">[ 가공소 ]</span>
+        <span class="title">[ 쓰레기 재활용 센터 ]</span>
         <button id="btn1" onclick="craft('효자손', 12, '눅눅한 튀김옷', 3)">효자손(튀김옷3)</button>
         <button id="btn2" onclick="craft('전여친 편지', 50, '사직서', 1)">편지(사직서1)</button>
         <button id="btn3" onclick="craft('화장실 솔', 120, '암모니아', 1)">솔(암모니아1)</button>
@@ -132,49 +131,18 @@
     function win() {
         player.gold += monster.gold;
         player.book[monster.name] = (player.book[monster.name] || 0) + 1;
-        
-        // 체력 회복
         player.hp = Math.min(player.maxHp, player.hp + Math.floor(player.maxHp * 0.5));
         
-        // 엔딩 체크
-        const collectedCount = Object.keys(player.book).length;
-        if (collectedCount >= 30) {
-            showEnding();
+        if (Object.keys(player.book).length >= 30) {
+            document.getElementById('ending-ui').style.display = 'block';
+            player.isDead = true;
             return;
         }
 
+        addLog(`✅ ${monster.name} 처치! (정신력 회복)`);
         player.lv++;
         spawn();
         save();
-    }
-
-    function showEnding() {
-        document.getElementById('ending-ui').style.display = 'block';
-        player.isDead = true; // 게임 일시정지 효과
-    }
-
-    function rebirth() {
-        // 환생 보너스: 공격력 기본값 상승
-        const newRebirthCount = (player.rebirthCount || 0) + 1;
-        const bonusAtk = 10 + (newRebirthCount * 50);
-        
-        player = {
-            lv: 1,
-            atk: bonusAtk,
-            hp: 150,
-            maxHp: 150,
-            gold: 0,
-            inv: {},
-            isDead: false,
-            book: {}, // 도감도 초기화하거나 유지 선택 가능 (여기선 초기화)
-            rebirthCount: newRebirthCount
-        };
-        
-        document.getElementById('ending-ui').style.display = 'none';
-        addLog(`<span style="color:#ffd700;">✨ 제 ${newRebirthCount}의 삶이 시작되었습니다. 기본 공격력이 대폭 상승했습니다!</span>`);
-        spawn();
-        save();
-        updateUI();
     }
 
     function spawn() {
@@ -183,6 +151,14 @@
                           : MONSTERS.normal[Math.floor(Math.random()*MONSTERS.normal.length)];
         monster = { name: data.name, max: data.hp+(player.lv*5), hp: data.hp+(player.lv*5), atk: data.atk+(player.lv), drop: data.drop, gold: data.gold };
         updateUI();
+    }
+
+    function rebirth() {
+        const nextRebirth = (player.rebirthCount || 0) + 1;
+        player = { lv: 1, atk: 10 + (nextRebirth * 50), hp: 150, maxHp: 150, gold: 0, inv: {}, isDead: false, book: {}, rebirthCount: nextRebirth };
+        document.getElementById('ending-ui').style.display = 'none';
+        spawn(); save(); updateUI();
+        addLog(`✨ 환생 성공! 기본 공격력이 상승했습니다.`);
     }
 
     function toggleBook() {
@@ -199,21 +175,15 @@
         all.forEach(m => {
             const seen = player.book[m.name] || 0;
             if(seen > 0) count++;
-            list.innerHTML += `<div class="book-item ${seen > 0 ? 'collected' : 'unknown'}">
-                ${seen > 0 ? m.name : '???'} - ${seen}회
-            </div>`;
+            list.innerHTML += `<div class="book-item ${seen > 0 ? 'collected' : 'unknown'}">${seen > 0 ? m.name : '???'} - ${seen}회</div>`;
         });
         document.getElementById('book-count').innerText = count;
     }
 
-    function save() { localStorage.setItem('funny_hunter_v4', JSON.stringify(player)); }
+    function save() { localStorage.setItem('funny_hunter_final', JSON.stringify(player)); }
     function load() {
-        const s = localStorage.getItem('funny_hunter_v4');
-        if(s) { 
-            player = JSON.parse(s); 
-            if(player.hp <= 0) player.hp = player.maxHp; 
-            player.isDead = false; 
-        }
+        const s = localStorage.getItem('funny_hunter_final');
+        if(s) { player = JSON.parse(s); player.isDead = false; if(player.hp <= 0) player.hp = player.maxHp; }
         spawn();
     }
 
@@ -223,33 +193,39 @@
     function craft(n, p, m, c) {
         if((player.inv[m]||0)>=c) { 
             player.inv[m]-=c; player.atk+=p; player.maxHp+=30; player.hp=player.maxHp; 
-            addLog(`🛠️ [${n}] 장착! (전투력+${p})`); updateUI(); save(); 
+            addLog(`🛠️ [${n}] 장착!`); updateUI(); save(); 
         }
     }
 
     function updateUI() {
-        document.getElementById('p-hp').innerText = player.hp;
-        document.getElementById('p-max').innerText = player.maxHp;
-        document.getElementById('p-hp-bar').style.width = (player.hp/player.maxHp*100) + "%";
-        document.getElementById('m-hp').innerText = Math.max(0, monster.hp);
-        document.getElementById('m-max').innerText = monster.max;
-        document.getElementById('m-hp-bar').style.width = (monster.hp/monster.max*100) + "%";
-        document.getElementById('atk').innerText = player.atk;
-        document.getElementById('gold').innerText = player.gold;
-        document.getElementById('re-count').innerText = player.rebirthCount || 0;
-        document.getElementById('m-name').innerText = `대상: ${monster.name}`;
+        // null 체크를 포함한 UI 업데이트
+        if(document.getElementById('p-hp')) document.getElementById('p-hp').innerText = Math.floor(player.hp);
+        if(document.getElementById('p-max')) document.getElementById('p-max').innerText = player.maxHp;
+        if(document.getElementById('p-hp-bar')) document.getElementById('p-hp-bar').style.width = (player.hp/player.maxHp*100) + "%";
+        if(document.getElementById('m-hp')) document.getElementById('m-hp').innerText = Math.max(0, Math.floor(monster.hp));
+        if(document.getElementById('m-max')) document.getElementById('m-max').innerText = monster.max;
+        if(document.getElementById('m-hp-bar')) document.getElementById('m-hp-bar').style.width = (monster.hp/monster.max*100) + "%";
+        if(document.getElementById('atk')) document.getElementById('atk').innerText = player.atk;
+        if(document.getElementById('gold')) document.getElementById('gold').innerText = player.gold;
+        if(document.getElementById('re-count')) document.getElementById('re-count').innerText = player.rebirthCount || 0;
+        if(document.getElementById('m-name')) document.getElementById('m-name').innerText = `대상: ${monster.name}`;
+
         let invS = "주머니: ";
         for(let k in player.inv) if(player.inv[k]>0) invS += `${k}(${player.inv[k]}) `;
-        document.getElementById('inv').innerText = invS;
-        document.getElementById('btn1').disabled = (player.inv['눅눅한 튀김옷'] || 0) < 3;
-        document.getElementById('btn2').disabled = (player.inv['사직서'] || 0) < 1;
-        document.getElementById('btn3').disabled = (player.inv['암모니아'] || 0) < 1;
+        if(document.getElementById('inv')) document.getElementById('inv').innerText = invS;
+
+        const b1 = document.getElementById('btn1'), b2 = document.getElementById('btn2'), b3 = document.getElementById('btn3');
+        if(b1) b1.disabled = (player.inv['눅눅한 튀김옷'] || 0) < 3;
+        if(b2) b2.disabled = (player.inv['사직서'] || 0) < 1;
+        if(b3) b3.disabled = (player.inv['암모니아'] || 0) < 1;
     }
 
     function addLog(m) {
         const l = document.getElementById('log-window');
-        l.innerHTML = `<div>> ${m}</div>` + l.innerHTML;
-        if (l.childNodes.length > 30) l.removeChild(l.lastChild);
+        if(l) {
+            l.innerHTML = `<div>> ${m}</div>` + l.innerHTML;
+            if (l.childNodes.length > 30) l.removeChild(l.lastChild);
+        }
     }
 
     window.onload = () => { load(); updateUI(); setInterval(battle, 1000); };
