@@ -2,122 +2,196 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>Hunter Idle Online</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>병맛 헌터 IDLE</title>
     <style>
-        body { background: #1a1a1a; color: #00ff41; font-family: 'Courier New', monospace; display: flex; justify-content: center; padding: 20px; }
-        #game-container { width: 100%; max-width: 500px; border: 2px solid #00ff41; padding: 20px; box-shadow: 0 0 10px #00ff41; }
-        .panel { border: 1px solid #333; padding: 10px; margin-bottom: 10px; background: #000; }
-        #log-window { height: 150px; overflow-y: auto; font-size: 14px; border-top: 1px solid #333; padding-top: 5px; }
-        button { background: #00ff41; color: #000; border: none; padding: 8px; cursor: pointer; font-weight: bold; margin-right: 5px; }
-        button:disabled { background: #114411; color: #004411; }
-        .rare { color: #ff3e3e; font-weight: bold; }
+        /* 병맛 감성 터미널 디자인 */
+        body { background: #1a1a1a; color: #00ff41; font-family: 'Courier New', monospace; display: flex; justify-content: center; padding: 20px; line-height: 1.5; }
+        #game-container { width: 100%; max-width: 500px; border: 3px double #00ff41; padding: 20px; background: #000; position: relative; }
+        .panel { border: 1px solid #333; padding: 10px; margin-bottom: 10px; }
+        .title { color: #ffff00; font-weight: bold; border-bottom: 1px solid #333; display: block; margin-bottom: 5px; }
+        #log-window { height: 180px; overflow-y: auto; font-size: 13px; color: #aaa; border-top: 1px solid #333; padding-top: 5px; display: flex; flex-direction: column-reverse; }
+        button { background: #00ff41; color: #000; border: none; padding: 8px; cursor: pointer; font-weight: bold; margin: 2px; font-family: inherit; }
+        button:disabled { background: #114411; color: #004411; cursor: not-allowed; }
+        
+        /* HP 바 스타일 */
+        .hp-bar-bg { width: 100%; height: 12px; background: #333; margin: 5px 0; border: 1px solid #555; }
+        .hp-fill { height: 100%; background: #ff3e3e; transition: width 0.3s; }
+        .p-hp-fill { background: #00ff41; }
+
+        /* 게임오버 레이어 */
+        #game-over { display: none; position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.9); color: #ff0000; text-align: center; padding-top: 120px; z-index: 100; }
+        .rare-msg { color: #ff00ff; font-weight: bold; background: #fff; }
     </style>
 </head>
 <body>
 
 <div id="game-container">
-    <h2>[ HUNTER IDLE v1.0 ]</h2>
-    <div class="panel">
-        <p>ATK: <span id="atk">10</span> | 무기: <span id="weapon">기본</span></p>
-        <p>GOLD: <span id="gold">0</span> | <span id="inv">소재: 없음</span></p>
+    <div id="game-over">
+        <h1 style="font-size: 3rem;">인생 하직</h1>
+        <p>현실의 벽에 부딪혀 정신을 잃었습니다.</p>
+        <button onclick="revive()" style="background: #ff0000; color: #fff; padding: 15px;">정신 차리기 (자존심 20% 차감)</button>
     </div>
+
+    <h2 style="text-align: center; color: #ffff00;">🤪 병맛 헌터 IDLE 🤪</h2>
+    
     <div class="panel">
-        <p id="m-name">대상: 슬라임</p>
-        <p>HP: <span id="m-hp">50</span> / <span id="m-max">50</span></p>
+        <span class="title">[ 내 상태 ]</span>
+        <p>정신력(HP): <span id="p-hp">100</span> / <span id="p-max">100</span></p>
+        <div class="hp-bar-bg"><div id="p-hp-bar" class="hp-fill p-hp-fill" style="width: 100%;"></div></div>
+        <p>전투력: <span id="atk">10</span> | 자존심(GOLD): <span id="gold">0</span>G</p>
+        <p id="inv" style="font-size: 12px; color: #00acee;">주머니: 텅 비었음</p>
     </div>
+
     <div class="panel">
-        <button id="btn1" onclick="craft('초보자 검', 15, '비늘', 3)">검 제작 (비늘3)</button>
-        <button id="btn2" onclick="craft('화염 대검', 80, '불꽃', 1)">불꽃검 (불꽃1)</button>
+        <span class="title">[ 오늘의 빌런 ]</span>
+        <p id="m-name">대상: 대기 중...</p>
+        <p>멘탈(HP): <span id="m-hp">0</span> / <span id="m-max">0</span></p>
+        <div class="hp-bar-bg"><div id="m-hp-bar" class="hp-fill" style="width: 0%;"></div></div>
     </div>
+
+    <div class="panel">
+        <span class="title">[ 쓰레기 재활용 센터 ]</span>
+        <button id="btn1" onclick="craft('효자손', 12, '눅눅한 튀김옷', 3)">효자손(튀김옷3)</button>
+        <button id="btn2" onclick="craft('전여친 편지', 50, '사직서', 1)">편지(사직서1)</button>
+        <button id="btn3" onclick="craft('화장실 솔', 120, '암모니아', 1)">솔(암모니아1)</button>
+    </div>
+
     <div id="log-window"></div>
 </div>
 
 <script>
-    // 1. 게임 데이터 초기화
-    let player = { atk: 10, gold: 0, weapon: "기본", inv: {}, lv: 1 };
-    let monster = { name: "슬라임", hp: 50, max: 50, drop: "비늘", gold: 10 };
+    // 1. 데이터 베이스
+    const MONSTERS = {
+        normal: [
+            { name: "출근하기 싫은 대리님", hp: 60, atk: 5, drop: "눅눅한 튀김옷", gold: 20 },
+            { name: "데이터 없는 스마트폰", hp: 80, atk: 8, drop: "눅눅한 튀김옷", gold: 25 },
+            { name: "어제 먹다 남은 치킨", hp: 50, atk: 4, drop: "눅눅한 튀김옷", gold: 15 }
+        ],
+        rare: [
+            { name: "👑 월요일 아침 8시 59분", hp: 500, atk: 40, drop: "사직서", gold: 200 },
+            { name: "👑 3년 안 빤 양말", hp: 400, atk: 50, drop: "암모니아", gold: 150 }
+        ]
+    };
 
-    // 2. 저장/불러오기 (localStorage - 웹 환경에서 가장 안전)
-    function save() {
-        localStorage.setItem('hunter_save', JSON.stringify({ player, monster }));
-    }
+    let player = { lv: 1, atk: 10, hp: 100, maxHp: 100, gold: 0, inv: {}, isDead: false };
+    let monster = { name: "", hp: 0, max: 0, atk: 0, drop: "", gold: 0 };
 
-    function load() {
-        const saved = localStorage.getItem('hunter_save');
-        if (saved) {
-            const d = JSON.parse(saved);
-            player = d.player;
-            monster = d.monster;
-            addLog("💾 데이터를 성공적으로 불러왔습니다.");
-        }
-    }
-
-    // 3. 전투 로직
+    // 2. 핵심 로직
     function battle() {
+        if (player.isDead) return;
+
+        // 서로 한 대씩 주고받기
         monster.hp -= player.atk;
-        if (monster.hp <= 0) {
-            player.gold += monster.gold;
-            let dMsg = "";
-            if (Math.random() > 0.5) {
-                player.inv[monster.drop] = (player.inv[monster.drop] || 0) + 1;
-                dMsg = ` [+${monster.drop}]`;
-            }
-            addLog(`✅ ${monster.name} 처치! +${monster.gold}G${dMsg}`);
-            player.lv++;
-            spawn();
-            save(); // 승리 시 자동 저장
+        player.hp -= monster.atk;
+
+        if (player.hp <= 0) {
+            player.hp = 0;
+            player.isDead = true;
+            document.getElementById('game-over').style.display = 'block';
+            addLog("<span style='color:red;'>💀 멘탈이 바사삭 되었습니다...</span>");
+        } else if (monster.hp <= 0) {
+            win();
         }
         updateUI();
     }
 
-    function spawn() {
-        if (Math.random() < 0.1) { // 10% 희귀 몬스터
-            monster = { name: "🔥화염 리오레", hp: 300+(player.lv*10), max: 300+(player.lv*10), drop: "불꽃", gold: 100 };
-            addLog("<span class='rare'>⚠️ 희귀 몬스터 출현!</span>");
-        } else {
-            monster = { name: "슬라임", hp: 50+(player.lv*5), max: 50+(player.lv*5), drop: "비늘", gold: 15 };
+    function win() {
+        player.gold += monster.gold;
+        let dMsg = "";
+        if (Math.random() > 0.4) {
+            player.inv[monster.drop] = (player.inv[monster.drop] || 0) + 1;
+            dMsg = ` [${monster.drop} 획득!]`;
         }
+        addLog(`✅ ${monster.name} 처치! +${monster.gold}G${dMsg}`);
+        player.lv++;
+        spawn();
+        save();
+    }
+
+    function spawn() {
+        const isRare = Math.random() < 0.15;
+        let data = isRare ? MONSTERS.rare[Math.floor(Math.random()*MONSTERS.rare.length)] 
+                          : MONSTERS.normal[Math.floor(Math.random()*MONSTERS.normal.length)];
+        
+        monster = {
+            name: data.name,
+            max: data.hp + (player.lv * 5),
+            hp: data.hp + (player.lv * 5),
+            atk: data.atk + Math.floor(player.lv * 0.8),
+            drop: data.drop,
+            gold: data.gold
+        };
+
+        if(isRare) addLog(`<span class="rare-msg">😱 [위험] ${monster.name}이(가) 나타났다!</span>`);
+        else addLog(`> [${monster.name}]이(가) 시비를 겁니다.`);
+    }
+
+    function revive() {
+        player.isDead = false;
+        player.hp = player.maxHp;
+        player.gold = Math.floor(player.gold * 0.8);
+        document.getElementById('game-over').style.display = 'none';
+        addLog("🩹 겨우 정신을 차리고 다시 전장으로 나갑니다.");
+        spawn();
+        updateUI();
     }
 
     function craft(name, pwr, mat, count) {
         if ((player.inv[mat] || 0) >= count) {
             player.inv[mat] -= count;
             player.atk += pwr;
-            player.weapon = name;
-            addLog(`🛠️ ${name} 제작 성공! (공격력 +${pwr})`);
+            player.maxHp += 30;
+            player.hp = player.maxHp;
+            addLog(`🛠️ [${name}] 장착! 전투력 +${pwr}, 정신력 +30`);
             updateUI();
             save();
         }
     }
 
+    // 3. 유틸리티 (UI, 저장)
+    function save() { localStorage.setItem('funny_hunter_save', JSON.stringify({player, monster})); }
+    function load() {
+        const s = localStorage.getItem('funny_hunter_save');
+        if(s) {
+            const d = JSON.parse(s);
+            player = d.player;
+            monster = d.monster;
+            if(player.hp <= 0) player.hp = player.maxHp;
+        } else {
+            spawn();
+        }
+    }
+
     function updateUI() {
-        document.getElementById('atk').innerText = player.atk;
-        document.getElementById('gold').innerText = player.gold;
-        document.getElementById('weapon').innerText = player.weapon;
-        document.getElementById('m-name').innerText = `대상: ${monster.name}`;
+        document.getElementById('p-hp').innerText = player.hp;
+        document.getElementById('p-max').innerText = player.maxHp;
+        document.getElementById('p-hp-bar').style.width = (player.hp/player.maxHp*100) + "%";
         document.getElementById('m-hp').innerText = Math.max(0, monster.hp);
         document.getElementById('m-max').innerText = monster.max;
-        
-        let invS = "소재: ";
-        for(let k in player.inv) if(player.inv[k]>0) invS += `${k}(${player.inv[k]}) `;
+        document.getElementById('m-hp-bar').style.width = (monster.hp/monster.max*100) + "%";
+        document.getElementById('atk').innerText = player.atk;
+        document.getElementById('gold').innerText = player.gold;
+        document.getElementById('m-name').innerText = `대상: ${monster.name}`;
+
+        let invS = "주머니: ";
+        for(let k in player.inv) if(player.inv[k]>0) invS += `${k}(${player.inv[k]}개) `;
         document.getElementById('inv').innerText = invS;
 
-        document.getElementById('btn1').disabled = (player.inv['비늘'] || 0) < 3;
-        document.getElementById('btn2').disabled = (player.inv['불꽃'] || 0) < 1;
+        document.getElementById('btn1').disabled = (player.inv['눅눅한 튀김옷'] || 0) < 3;
+        document.getElementById('btn2').disabled = (player.inv['사직서'] || 0) < 1;
+        document.getElementById('btn3').disabled = (player.inv['암모니아'] || 0) < 1;
     }
 
     function addLog(m) {
         const l = document.getElementById('log-window');
-        l.innerHTML = `> ${m}<br>` + l.innerHTML;
-        if (l.childNodes.length > 20) l.removeChild(l.lastChild);
+        const d = document.createElement('div');
+        d.innerHTML = `> ${m}`;
+        l.appendChild(d);
+        if (l.childNodes.length > 50) l.removeChild(l.firstChild);
     }
 
-    // 실행 시작
-    window.onload = () => {
-        load();
-        updateUI();
-        setInterval(battle, 1000); // 1초마다 자동 전투
-    };
+    window.onload = () => { load(); updateUI(); setInterval(battle, 1000); };
 </script>
 </body>
 </html>
