@@ -2,105 +2,91 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>Monster Hunter Idle - Rare Update</title>
+    <title>Hunter Idle Online</title>
     <style>
-        body { background-color: #1a1a1a; color: #e0e0e0; font-family: 'Courier New', monospace; display: flex; justify-content: center; padding: 20px; }
-        #game-container { width: 100%; max-width: 600px; border: 2px solid #8b4513; padding: 20px; background-color: #2b2b2b; }
-        .panel { margin-bottom: 15px; padding: 10px; border: 1px solid #555; background: #222; }
-        .title { color: #f1c40f; font-weight: bold; margin-bottom: 10px; display: block; }
-        #log-window { height: 180px; overflow-y: auto; background: #000; padding: 10px; font-size: 0.85rem; color: #aaa; border: 1px solid #444; }
-        button { background: #444; color: #fff; border: 1px solid #777; padding: 5px 10px; cursor: pointer; margin-right: 5px; }
-        button:hover { background: #666; }
-        button:disabled { color: #555; opacity: 0.5; }
-        .rare-text { color: #e74c3c; font-weight: bold; }
+        body { background: #1a1a1a; color: #00ff41; font-family: 'Courier New', monospace; display: flex; justify-content: center; padding: 20px; }
+        #game-container { width: 100%; max-width: 500px; border: 2px solid #00ff41; padding: 20px; box-shadow: 0 0 10px #00ff41; }
+        .panel { border: 1px solid #333; padding: 10px; margin-bottom: 10px; background: #000; }
+        #log-window { height: 150px; overflow-y: auto; font-size: 14px; border-top: 1px solid #333; padding-top: 5px; }
+        button { background: #00ff41; color: #000; border: none; padding: 8px; cursor: pointer; font-weight: bold; margin-right: 5px; }
+        button:disabled { background: #114411; color: #004411; }
+        .rare { color: #ff3e3e; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div id="game-container">
-    <h1 style="text-align:center; color:#e74c3c;">HUNTER IDLE</h1>
-
+    <h2>[ HUNTER IDLE v1.0 ]</h2>
     <div class="panel">
-        <span class="title">[ 헌터 정보 ]</span>
-        <p>공격력: <span id="atk">10</span> | 무기: <span id="weapon">없음</span> | 골드: <span id="gold">0</span>G</p>
-        <div id="inventory">소재: 없음</div>
+        <p>ATK: <span id="atk">10</span> | 무기: <span id="weapon">기본</span></p>
+        <p>GOLD: <span id="gold">0</span> | <span id="inv">소재: 없음</span></p>
     </div>
-
     <div class="panel">
-        <span class="title">[ 사냥 구역 ]</span>
-        <p id="monster-ui">대상: <b>철광석 슬라임</b></p>
-        <p>HP: <span id="monster-hp">60</span> / <span id="monster-max-hp">60</span></p>
+        <p id="m-name">대상: 슬라임</p>
+        <p>HP: <span id="m-hp">50</span> / <span id="m-max">50</span></p>
     </div>
-
     <div class="panel">
-        <span class="title">[ 가공점 ]</span>
-        <button id="craft-1" onclick="craft('초보자 검', 15, '비늘', 3)">초보자 검 (비늘 3)</button>
-        <button id="craft-2" onclick="craft('화염의 대검', 80, '화염 주머니', 1)">화염의 대검 (주머니 1)</button>
+        <button id="btn1" onclick="craft('초보자 검', 15, '비늘', 3)">검 제작 (비늘3)</button>
+        <button id="btn2" onclick="craft('화염 대검', 80, '불꽃', 1)">불꽃검 (불꽃1)</button>
     </div>
-
     <div id="log-window"></div>
 </div>
 
 <script>
-    let player = { atk: 10, gold: 0, weapon: "없음", inventory: {}, level: 1 };
-    let monster = { name: "철광석 슬라임", hp: 60, maxHp: 60, dropItem: "비늘", goldReward: 20 };
+    // 1. 게임 데이터 초기화
+    let player = { atk: 10, gold: 0, weapon: "기본", inv: {}, lv: 1 };
+    let monster = { name: "슬라임", hp: 50, max: 50, drop: "비늘", gold: 10 };
 
+    // 2. 저장/불러오기 (localStorage - 웹 환경에서 가장 안전)
+    function save() {
+        localStorage.setItem('hunter_save', JSON.stringify({ player, monster }));
+    }
+
+    function load() {
+        const saved = localStorage.getItem('hunter_save');
+        if (saved) {
+            const d = JSON.parse(saved);
+            player = d.player;
+            monster = d.monster;
+            addLog("💾 데이터를 성공적으로 불러왔습니다.");
+        }
+    }
+
+    // 3. 전투 로직
     function battle() {
         monster.hp -= player.atk;
         if (monster.hp <= 0) {
-            player.gold += monster.goldReward;
-            let dropMsg = "";
-            if (Math.random() > 0.4) { // 60% 확률 드랍
-                player.inventory[monster.dropItem] = (player.inventory[monster.dropItem] || 0) + 1;
-                dropMsg = ` [${monster.dropItem}] 획득!`;
+            player.gold += monster.gold;
+            let dMsg = "";
+            if (Math.random() > 0.5) {
+                player.inv[monster.drop] = (player.inv[monster.drop] || 0) + 1;
+                dMsg = ` [+${monster.drop}]`;
             }
-            addLog(`✅ ${monster.name} 처치! +${monster.goldReward}G${dropMsg}`);
-            player.level++;
-            spawnMonster();
-            saveGame();
+            addLog(`✅ ${monster.name} 처치! +${monster.gold}G${dMsg}`);
+            player.lv++;
+            spawn();
+            save(); // 승리 시 자동 저장
         }
         updateUI();
     }
 
-    function spawnMonster() {
-        if (Math.random() < 0.1) { // 10% 확률 희귀 몬스터
-            monster.name = "🔥 화염 리오레";
-            monster.maxHp = 300 + (player.level * 10);
-            monster.dropItem = "화염 주머니";
-            monster.goldReward = 100;
-            addLog(`<span class="rare-text">⚠️ 희귀 몬스터가 나타났습니다!</span>`);
+    function spawn() {
+        if (Math.random() < 0.1) { // 10% 희귀 몬스터
+            monster = { name: "🔥화염 리오레", hp: 300+(player.lv*10), max: 300+(player.lv*10), drop: "불꽃", gold: 100 };
+            addLog("<span class='rare'>⚠️ 희귀 몬스터 출현!</span>");
         } else {
-            monster.name = "철광석 슬라임";
-            monster.maxHp = 60 + (player.level * 5);
-            monster.dropItem = "비늘";
-            monster.goldReward = 20;
+            monster = { name: "슬라임", hp: 50+(player.lv*5), max: 50+(player.lv*5), drop: "비늘", gold: 15 };
         }
-        monster.hp = monster.maxHp;
     }
 
-    function craft(name, power, mat, count) {
-        if ((player.inventory[mat] || 0) >= count) {
-            player.inventory[mat] -= count;
-            player.atk += power;
+    function craft(name, pwr, mat, count) {
+        if ((player.inv[mat] || 0) >= count) {
+            player.inv[mat] -= count;
+            player.atk += pwr;
             player.weapon = name;
-            addLog(`🛠️ [${name}] 제작 완료! (공격력 +${power})`);
+            addLog(`🛠️ ${name} 제작 성공! (공격력 +${pwr})`);
             updateUI();
-            saveGame();
-        }
-    }
-
-    function saveGame() {
-        const data = JSON.stringify({ player, monster });
-        document.cookie = `hunterData=${encodeURIComponent(data)}; max-age=604800; path=/`;
-    }
-
-    function loadGame() {
-        const cookie = document.cookie.split('; ').find(row => row.startsWith('hunterData='));
-        if (cookie) {
-            const data = JSON.parse(decodeURIComponent(cookie.split('=')[1]));
-            player = data.player;
-            monster = data.monster;
-            addLog("💾 데이터를 불러왔습니다.");
+            save();
         }
     }
 
@@ -108,15 +94,30 @@
         document.getElementById('atk').innerText = player.atk;
         document.getElementById('gold').innerText = player.gold;
         document.getElementById('weapon').innerText = player.weapon;
-        document.getElementById('monster-hp').innerText = Math.max(0, monster.hp);
-        document.getElementById('monster-max-hp').innerText = monster.maxHp;
-        document.getElementById('monster-ui').innerHTML = `대상: <b>${monster.name}</b>`;
+        document.getElementById('m-name').innerText = `대상: ${monster.name}`;
+        document.getElementById('m-hp').innerText = Math.max(0, monster.hp);
+        document.getElementById('m-max').innerText = monster.max;
         
-        let invText = "소재: ";
-        for (let key in player.inventory) {
-            if (player.inventory[key] > 0) invText += `${key}(${player.inventory[key]}) `;
-        }
-        document.getElementById('inventory').innerText = invText;
+        let invS = "소재: ";
+        for(let k in player.inv) if(player.inv[k]>0) invS += `${k}(${player.inv[k]}) `;
+        document.getElementById('inv').innerText = invS;
 
-        document.getElementById('craft-1').disabled = (player.inventory['비늘'] || 0) < 3;
-        document.
+        document.getElementById('btn1').disabled = (player.inv['비늘'] || 0) < 3;
+        document.getElementById('btn2').disabled = (player.inv['불꽃'] || 0) < 1;
+    }
+
+    function addLog(m) {
+        const l = document.getElementById('log-window');
+        l.innerHTML = `> ${m}<br>` + l.innerHTML;
+        if (l.childNodes.length > 20) l.removeChild(l.lastChild);
+    }
+
+    // 실행 시작
+    window.onload = () => {
+        load();
+        updateUI();
+        setInterval(battle, 1000); // 1초마다 자동 전투
+    };
+</script>
+</body>
+</html>
