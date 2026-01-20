@@ -5,183 +5,177 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VILLAIN HUNTER : Minimal Edition</title>
     <style>
-        /* 기본 테마 설정 */
         :root {
-            --bg-color: #121212;
-            --panel-bg: #1e1e1e;
+            --bg-color: #000000;
+            --panel-bg: #111111;
             --text-main: #ffffff;
-            --text-sub: #b0b0b0;
+            --text-sub: #888888;
             --accent: #ffffff;
-            --border: #333333;
-            --hp-player: #ffffff;
-            --hp-monster: #555555;
-            --rare-color: #ff3e3e;
+            --border: #222222;
         }
 
         body { 
             background: var(--bg-color); 
             color: var(--text-main); 
-            font-family: 'Pretendard', -apple-system, sans-serif; 
+            font-family: 'Pretendard', sans-serif; 
             display: flex; justify-content: center; padding: 20px; margin: 0;
         }
 
         #game-container { 
-            width: 100%; max-width: 450px; 
+            width: 100%; max-width: 400px; 
             background: var(--panel-bg); 
-            border-radius: 12px; padding: 25px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            position: relative; overflow: hidden;
+            border-radius: 16px; padding: 25px; 
+            border: 1px solid var(--border);
+            position: relative;
         }
 
-        h2 { text-align: center; font-weight: 300; letter-spacing: 4px; margin-bottom: 30px; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
+        /* 헤더: 도감 버튼을 눈에 띄게 배치 */
+        .header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 25px; border-bottom: 1px solid var(--border); padding-bottom: 15px;
+        }
+        h2 { margin: 0; font-weight: 800; font-size: 18px; letter-spacing: 2px; }
+        .book-trigger { 
+            background: transparent; color: var(--text-sub); border: 1px solid var(--border); 
+            padding: 5px 12px; border-radius: 20px; font-size: 11px; cursor: pointer;
+        }
 
         .panel { 
-            background: rgba(255,255,255,0.03);
-            border-radius: 8px; border: 1px solid var(--border);
-            padding: 15px; margin-bottom: 20px; 
+            background: rgba(255,255,255,0.02);
+            border-radius: 12px; padding: 18px; margin-bottom: 15px; 
         }
 
-        .title { color: var(--text-sub); font-size: 11px; font-weight: 700; text-transform: uppercase; margin-bottom: 10px; display: block; letter-spacing: 1px; }
+        .title { color: var(--text-sub); font-size: 10px; font-weight: 700; text-transform: uppercase; margin-bottom: 12px; display: block; letter-spacing: 1px; }
 
-        /* 상태바 디자인 */
-        .hp-bar-bg { width: 100%; height: 6px; background: #333; margin: 10px 0; border-radius: 3px; overflow: hidden; }
-        .hp-fill { height: 100%; transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
-        .p-hp-fill { background: var(--hp-player); }
-        .m-hp-fill { background: var(--hp-monster); }
+        /* HP 바 */
+        .hp-bar-bg { width: 100%; height: 4px; background: #222; margin: 8px 0; border-radius: 2px; overflow: hidden; }
+        .hp-fill { height: 100%; transition: width 0.4s ease; }
+        .p-hp-fill { background: #fff; }
+        .m-hp-fill { background: #444; }
 
-        /* 버튼 디자인 */
+        /* 버튼 */
         button { 
             background: #fff; color: #000; border: none; 
-            padding: 10px 14px; cursor: pointer; font-weight: 600; 
-            margin: 4px; border-radius: 4px; font-size: 13px;
-            transition: all 0.2s;
+            padding: 12px; cursor: pointer; font-weight: 700; 
+            border-radius: 8px; font-size: 12px; transition: 0.2s;
         }
-        button:hover { background: #ccc; transform: translateY(-1px); }
-        button:disabled { background: #333; color: #666; cursor: not-allowed; transform: none; }
+        button:hover { opacity: 0.8; }
+        button:disabled { background: #222; color: #444; cursor: not-allowed; }
 
-        #heal-btn { width: 100%; background: #333; color: #fff; margin-top: 10px; }
-        #heal-btn:not(:disabled) { background: #fff; color: #000; border: 1px solid #fff; }
+        #heal-btn { width: 100%; background: #fff; color: #000; margin-bottom: 15px; }
 
-        /* 로그창 */
+        /* 로그 */
         #log-window { 
-            height: 140px; overflow-y: auto; font-size: 13px; color: var(--text-sub); 
-            border-top: 1px solid var(--border); padding-top: 10px;
-            display: flex; flex-direction: column-reverse; gap: 5px;
+            height: 120px; overflow-y: auto; font-size: 12px; color: #666; 
+            padding-top: 10px; display: flex; flex-direction: column-reverse; gap: 4px;
         }
 
-        /* 오버레이 UI */
+        /* 오버레이 */
         #book-ui, #ending-ui, #game-over { 
             display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-            z-index: 100; padding: 40px; box-sizing: border-box;
-            background: var(--bg-color); flex-direction: column; align-items: center; justify-content: center;
+            z-index: 100; padding: 30px; box-sizing: border-box;
+            background: #000; flex-direction: column; align-items: center; justify-content: center; text-align: center;
         }
         
-        #ending-ui { background: #fff; color: #000; text-align: center; }
-        #ending-ui button { background: #000; color: #fff; padding: 15px 30px; }
-
-        .m-skill { color: #888; font-style: italic; }
-        .rare-msg { color: var(--rare-color); font-weight: bold; }
-        
-        /* 스크롤바 숨기기 */
-        #log-window::-webkit-scrollbar { width: 0; }
+        .m-skill { color: #555; font-size: 11px; }
+        .rare-msg { color: #ff3e3e; }
+        #inv { font-size: 10px; color: #444; margin-top: 10px; text-align: center; word-break: break-all; }
     </style>
 </head>
 <body>
 
 <div id="game-container">
     <div id="game-over">
-        <h1 style="font-weight: 200;">DEFEATED</h1>
-        <p style="color: #666; margin-bottom: 30px;">정신력이 바닥났습니다.</p>
-        <button onclick="revive()">정신 차리기 (-20% Gold)</button>
+        <h1>DEFEATED</h1>
+        <button onclick="revive()">REVIVE (-20% GOLD)</button>
     </div>
 
     <div id="book-ui">
-        <h3 style="font-weight: 300;">BESTIARY (<span id="book-count">0</span>/30)</h3>
-        <div id="book-list" style="width: 100%; overflow-y: auto; margin: 20px 0; font-size: 13px; color: #888;"></div>
-        <button onclick="toggleBook()">CLOSE</button>
+        <h3>VILLAIN BESTIARY</h3>
+        <div id="book-list" style="width: 100%; overflow-y: auto; margin: 20px 0; font-size: 12px; color: #666; text-align: left;"></div>
+        <button onclick="toggleBook()" style="width: 100%;">BACK TO HUNT</button>
     </div>
 
     <div id="ending-ui">
-        <h1 style="font-weight: 900; letter-spacing: 10px;">NIRVANA</h1>
-        <p>모든 번뇌가 사라졌습니다.</p>
-        <button onclick="rebirth()" style="margin-top: 20px;">ASCEND (REBIRTH)</button>
+        <h1>NIRVANA</h1>
+        <p>모든 고통에서 해방되었습니다.</p>
+        <button onclick="rebirth()">REBIRTH</button>
     </div>
 
-    <h2>VILLAIN HUNTER</h2>
+    <div class="header">
+        <h2>VILLAIN HUNTER</h2>
+        <button class="book-trigger" onclick="toggleBook()">📕 BESTIARY <span id="book-count-header">0</span>/30</button>
+    </div>
     
     <div class="panel">
-        <span class="title">Status</span>
-        <div style="display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 5px;">
-            <span>Mental Health</span>
+        <span class="title">My Status</span>
+        <div style="display: flex; justify-content: space-between; font-size: 14px;">
+            <span id="atk-display">ATK 10</span>
             <span><span id="p-hp">100</span> / <span id="p-max">100</span></span>
         </div>
-        <div class="hp-bar-bg"><div id="p-hp-bar" class="hp-fill p-hp-fill" style="width: 100%;"></div></div>
+        <div class="hp-bar-bg"><div id="p-hp-bar" class="hp-fill p-hp-fill"></div></div>
         
-        <button id="heal-btn" onclick="usePotion()">LUNCH BREAK <span id="heal-count">(0)</span></button>
+        <button id="heal-btn" onclick="usePotion()">USE LUNCH BREAK <span id="heal-count">(0)</span></button>
         
-        <div style="margin-top: 15px; display: flex; justify-content: space-between; font-size: 12px; color: var(--text-sub);">
-            <span>ATK: <span id="atk" style="color:#fff">10</span></span>
-            <span>GOLD: <span id="gold" style="color:#fff">0</span></span>
-            <span>REBIRTH: <span id="re-count" style="color:#fff">0</span></span>
+        <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-sub);">
+            <span>GOLD: <span id="gold">0</span></span>
+            <span>REBIRTH: <span id="re-count">0</span></span>
         </div>
     </div>
 
     <div class="panel">
-        <span class="title" id="m-name">Target: Waiting...</span>
-        <div class="hp-bar-bg"><div id="m-hp-bar" class="hp-fill m-hp-fill" style="width: 0%;"></div></div>
-        <div id="m-hp-text" style="text-align: right; font-size: 11px; color: #555;">0 / 0</div>
+        <span class="title" id="m-name">Targeting...</span>
+        <div class="hp-bar-bg"><div id="m-hp-bar" class="hp-fill m-hp-fill"></div></div>
+        <div id="m-hp-text" style="text-align: right; font-size: 10px; color: #444;">0 / 0</div>
     </div>
 
-    <div class="panel" style="border: none; padding: 0; background: transparent;">
+    <div class="panel" style="background: transparent; border: 1px dashed #222;">
         <span class="title">Workshop</span>
-        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px;">
-            <button id="btn1" onclick="craft('효자손', 12, '눅눅한 튀김옷', 3)">Backscratcher</button>
-            <button id="btn2" onclick="craft('편지', 50, '사직서', 1)">Letter</button>
-            <button id="btn3" onclick="craft('솔', 120, '암모니아', 1)">Brush</button>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
+            <button id="btn1" onclick="craft('효자손', 15, '눅눅한 튀김옷', 3)">Backscratcher</button>
+            <button id="btn2" onclick="craft('편지', 60, '사직서', 1)">Letter</button>
+            <button id="btn3" onclick="craft('솔', 150, '암모니아', 1)">Brush</button>
         </div>
-        <p id="inv" style="font-size: 10px; color: #555; margin-top: 10px; text-align: center;">Inventory: Empty</p>
+        <p id="inv">Inventory: Empty</p>
     </div>
 
     <div id="log-window"></div>
-    
-    <button onclick="toggleBook()" style="width: 100%; background: transparent; color: #444; font-size: 10px; margin-top: 10px;">OPEN BESTIARY</button>
 </div>
 
 <script>
-    // [기존의 모든 JavaScript 로직 유지 및 UI 연결]
     const MONSTERS = {
         normal: [
             { name: "출근 싫은 대리님", hp: 60, atk: 5, drop: "눅눅한 튀김옷", gold: 20, skill: "업무 메신저 폭격!" },
             { name: "법카 안 주는 부장님", hp: 70, atk: 7, drop: "눅눅한 튀김옷", gold: 25, skill: "영수증 반려 시전!" },
             { name: "라떼 차장님", hp: 80, atk: 10, drop: "눅눅한 튀김옷", gold: 30, skill: "나때는 말이야~ 훈수!" },
-            { name: "메뉴 못 고르는 사원", hp: 50, atk: 4, drop: "눅눅한 튀김옷", gold: 15, skill: "아무거나요! 결정장애 공격!" },
+            { name: "메뉴 못 고르는 사원", hp: 50, atk: 4, drop: "눅눅한 튀김옷", gold: 15, skill: "아무거나요! 결정장애!" },
             { name: "퇴근직전 팀장님", hp: 100, atk: 15, drop: "사직서", gold: 50, skill: "잠깐 나좀 보지? 기습!" },
             { name: "데이터 없는 폰", hp: 40, atk: 6, drop: "눅눅한 튀김옷", gold: 20, skill: "로딩 스피너 무한루프!" },
             { name: "안 읽는 카톡방", hp: 90, atk: 12, drop: "눅눅한 튀김옷", gold: 35, skill: "1 안 사라지는 저주!" },
             { name: "눅눅한 치킨", hp: 45, atk: 5, drop: "눅눅한 튀김옷", gold: 15, skill: "기름진 냄새 유혹!" },
-            { name: "새끼발가락 찧음", hp: 200, atk: 80, drop: "암모니아", gold: 100, skill: "침묵의 비명 유발!" },
+            { name: "새끼발가락 찧음", hp: 200, atk: 80, drop: "암모니아", gold: 100, skill: "침묵의 비명!" },
             { name: "안경 찾는 나", hp: 75, atk: 5, drop: "눅눅한 튀김옷", gold: 25, skill: "치매 초기 증상 공격!" },
             { name: "젖은 슬리퍼", hp: 150, atk: 30, drop: "암모니아", gold: 70, skill: "눅눅한 불쾌감!" },
-            { name: "잔액 부족 카드", hp: 110, atk: 22, drop: "눅눅한 튀김옷", gold: 50, skill: "잔액 부족 공격!" },
+            { name: "잔액 부족 카드", hp: 110, atk: 22, drop: "눅눅한 튀김옷", gold: 50, skill: "잔액 부족!" },
             { name: "일요일 밤 우울함", hp: 140, atk: 15, drop: "사직서", gold: 65, skill: "개콘 엔딩곡 환청!" },
             { name: "비번 5번 틀림", hp: 120, atk: 20, drop: "사직서", gold: 60, skill: "본인인증 무한루프!" },
             { name: "씨 많은 수박", hp: 65, atk: 7, drop: "눅눅한 튀김옷", gold: 24, skill: "씨 뱉기 연사!" },
-            { name: "안 터지는 WIFI", hp: 80, atk: 10, drop: "눅눅한 튀김옷", gold: 25, skill: "핑 폭발 공격!" },
-            { name: "보이스피싱", hp: 50, atk: 5, drop: "눅눅한 튀김옷", gold: 10, skill: "검찰 사칭 토크!" },
+            { name: "안 터지는 WIFI", hp: 80, atk: 10, drop: "눅눅한 튀김옷", gold: 25, skill: "핑 폭발!" },
+            { name: "보이스피싱", hp: 50, atk: 5, drop: "눅눅한 튀김옷", gold: 10, skill: "검찰 사칭!" },
             { name: "버스 거꾸로 탐", hp: 100, atk: 10, drop: "눅눅한 튀김옷", gold: 40, skill: "멘탈 정반대 주행!" },
             { name: "눅눅한 팝콘", hp: 40, atk: 3, drop: "눅눅한 튀김옷", gold: 12, skill: "질긴 옥수수 껍질!" },
             { name: "말 안 듣는 AI", hp: 90, atk: 15, drop: "눅눅한 튀김옷", gold: 35, skill: "몰라요 시전!" },
-            { name: "사라진 리모컨", hp: 110, atk: 20, drop: "눅눅한 튀김옷", gold: 45, skill: "행방불명 기동!" },
-            { name: "무한 로딩 유튜브", hp: 85, atk: 12, drop: "눅눅한 튀김옷", gold: 30, skill: "화질구지 공격!" },
-            { name: "차가운 붕어빵", hp: 50, atk: 6, drop: "눅눅한 튀김옷", gold: 18, skill: "밀가루 반죽 공격!" },
-            { name: "닫히는 지하철 문", hp: 130, atk: 25, drop: "눅눅한 튀김옷", gold: 55, skill: "지각 확정 빔!" },
-            { name: "품절된 한정판", hp: 160, atk: 40, drop: "사직서", gold: 80, skill: "플렉스 불능 공격!" }
+            { name: "사라진 리모컨", hp: 110, atk: 20, drop: "눅눅한 튀김옷", gold: 45, skill: "행방불명!" },
+            { name: "무한 로딩 유튜브", hp: 85, atk: 12, drop: "눅눅한 튀김옷", gold: 30, skill: "화질구지!" },
+            { name: "차가운 붕어빵", hp: 50, atk: 6, drop: "눅눅한 튀김옷", gold: 18, skill: "밀가루 반죽!" },
+            { name: "닫히는 지하철 문", hp: 130, atk: 25, drop: "눅눅한 튀김옷", gold: 55, skill: "지각 확정!" },
+            { name: "품절된 한정판", hp: 160, atk: 40, drop: "사직서", gold: 80, skill: "플렉스 불능!" }
         ],
         rare: [
             { name: "👑 월요일 8:59 AM", hp: 800, atk: 60, gold: 500, skill: "기상 알람 10연타!", drop: "사직서" },
             { name: "👑 3년 안 빤 양말", hp: 600, atk: 70, gold: 400, skill: "화학 무기 악취!", drop: "암모니아" },
             { name: "👑 윈도우 업데이트", hp: 1000, atk: 55, gold: 600, skill: "강제 재부팅!", drop: "사직서" },
-            { name: "👑 명절 잔소리꾼", hp: 1200, atk: 45, gold: 700, skill: "비교 분석 공격!", drop: "사직서" },
+            { name: "👑 명절 잔소리꾼", hp: 1200, atk: 45, gold: 700, skill: "비교 분석!", drop: "사직서" },
             { name: "👑 전애인의 자니?", hp: 900, atk: 80, gold: 550, skill: "새벽 감성 폭격!", drop: "암모니아" }
         ]
     };
@@ -194,7 +188,7 @@
         monster.hp -= player.atk;
         if (monster.hp > 0) {
             player.hp -= monster.atk;
-            if (Math.random() < 0.2) addLog(`<span class="m-skill">${monster.skill}</span>`);
+            if (Math.random() < 0.15) addLog(`<span class="m-skill">${monster.skill}</span>`);
         }
         if (player.hp <= 0) { player.hp = 0; gameOver(); } 
         else if (monster.hp <= 0) { win(); }
@@ -204,9 +198,8 @@
     function usePotion() {
         if (player.potion > 0 && !player.potionUsed) {
             player.potion--; player.potionUsed = true;
-            const heal = Math.floor(player.maxHp * 0.8);
-            player.hp = Math.min(player.maxHp, player.hp + heal);
-            addLog(`💖 점심시간 보너스로 정신력을 회복했습니다.`);
+            player.hp = Math.min(player.maxHp, player.hp + Math.floor(player.maxHp * 0.8));
+            addLog(`💖 점심을 먹고 기운을 차렸습니다.`);
             updateUI();
         }
     }
@@ -214,9 +207,12 @@
     function win() {
         player.gold += monster.gold;
         player.book[monster.name] = (player.book[monster.name] || 0) + 1;
-        player.hp = Math.min(player.maxHp, player.hp + Math.floor(player.maxHp * 0.3));
+        player.hp = Math.min(player.maxHp, player.hp + Math.floor(player.maxHp * 0.5)); // 처치 시 50% 즉시 회복
         player.potionUsed = false;
-        if (Math.random() < 0.2) player.potion++;
+        player.potion++; // 몬스터 잡을 때마다 무조건 1개 획득
+        
+        if (Math.random() > 0.4) player.inv[monster.drop] = (player.inv[monster.drop] || 0) + 1;
+        
         if (Object.keys(player.book).length >= 30) { document.getElementById('ending-ui').style.display = 'flex'; player.isDead = true; return; }
         player.lv++; spawn(); save();
     }
@@ -248,17 +244,17 @@
         list.innerHTML = "";
         [...MONSTERS.normal, ...MONSTERS.rare].forEach(m => {
             const s = player.book[m.name] || 0;
-            list.innerHTML += `<div style="padding:5px 0; border-bottom:1px solid #222; display:flex; justify-content:space-between; color:${s>0?'#fff':'#333'}">
+            list.innerHTML += `<div style="padding:6px 0; border-bottom:1px solid #111; display:flex; justify-content:space-between; color:${s>0?'#eee':'#333'}">
                 <span>${s>0 ? m.name : 'Unknown Villain'}</span>
-                <span>${s} KC</span>
+                <span>${s} 잡음</span>
             </div>`;
         });
-        document.getElementById('book-count').innerText = Object.keys(player.book).length;
+        document.getElementById('book-count-header').innerText = Object.keys(player.book).length;
     }
 
-    function save() { localStorage.setItem('funny_hunter_minimal', JSON.stringify(player)); }
+    function save() { localStorage.setItem('funny_hunter_v6', JSON.stringify(player)); }
     function load() {
-        const s = localStorage.getItem('funny_hunter_minimal');
+        const s = localStorage.getItem('funny_hunter_v6');
         if(s) { player = JSON.parse(s); player.isDead = false; if(player.hp <= 0) player.hp = player.maxHp; }
         spawn();
     }
@@ -272,7 +268,7 @@
     function craft(n, p, m, c) {
         if((player.inv[m]||0)>=c) { 
             player.inv[m]-=c; player.atk+=p; player.maxHp+=30; player.hp=player.maxHp; 
-            addLog(`🛠 ${n} 제작 성공.`); updateUI(); save(); 
+            addLog(`🛠 ${n} 장착 완료.`); updateUI(); save(); 
         }
     }
 
@@ -282,12 +278,13 @@
         document.getElementById('p-hp-bar').style.width = (player.hp/player.maxHp*100) + "%";
         document.getElementById('m-hp-bar').style.width = (monster.hp/monster.max*100) + "%";
         document.getElementById('m-hp-text').innerText = `${Math.max(0, Math.floor(monster.hp))} / ${monster.max}`;
-        document.getElementById('atk').innerText = player.atk;
+        document.getElementById('atk-display').innerText = `ATK ${player.atk}`;
         document.getElementById('gold').innerText = player.gold;
         document.getElementById('re-count').innerText = player.rebirthCount || 0;
         document.getElementById('m-name').innerText = `Target: ${monster.name}`;
         document.getElementById('heal-count').innerText = `(${player.potion})`;
         document.getElementById('heal-btn').disabled = (player.potion <= 0 || player.potionUsed || player.isDead);
+        document.getElementById('book-count-header').innerText = Object.keys(player.book).length;
         
         let invS = "Inventory: ";
         for(let k in player.inv) if(player.inv[k]>0) invS += `${k}(${player.inv[k]}) `;
