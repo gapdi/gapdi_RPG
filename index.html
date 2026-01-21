@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VILLAIN HUNTER : THE COMPLETE SKILLS EDITION</title>
+    <title>VILLAIN HUNTER : COLLECTOR EDITION</title>
     <style>
         :root {
             --bg-color: #0c0c0c; --panel-bg: #1a1a1a; --text-main: #eeeeee;
@@ -13,6 +13,11 @@
         body { background: var(--bg-color); color: var(--text-main); font-family: 'Pretendard', sans-serif; display: flex; justify-content: center; padding: 20px; margin: 0; line-height: 1.4; font-size: 14px; }
         #game-container { width: 100%; max-width: 480px; background: var(--panel-bg); border-radius: 20px; padding: 25px; border: 1px solid var(--border); position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         
+        /* 도감 상시 표시바 */
+        .book-status-bar { background: rgba(0,0,0,0.3); border-radius: 10px; padding: 10px; margin-bottom: 15px; border: 1px solid #333; display: flex; flex-direction: column; gap: 5px; }
+        .book-progress-bg { width: 100%; height: 6px; background: #222; border-radius: 3px; overflow: hidden; }
+        #book-progress-fill { width: 0%; height: 100%; background: linear-gradient(90deg, var(--gold), var(--unique)); transition: width 0.5s; }
+
         .equip-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 15px; }
         .equip-slot { background: #000; border: 1px solid #444; padding: 6px; border-radius: 8px; text-align: center; font-size: 10px; height: 65px; display: flex; flex-direction: column; justify-content: center; overflow: hidden; }
         .equip-slot span { color: #888; display: block; margin-bottom: 2px; font-size: 9px; }
@@ -31,8 +36,8 @@
         
         .modal { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 100; background: rgba(0,0,0,0.95); flex-direction: column; align-items: center; justify-content: center; text-align: center; border-radius: 20px; padding: 20px; box-sizing: border-box; }
         #book-modal { overflow-y: auto; display: none; padding: 30px 15px; }
-        .book-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; width: 100%; }
-        .book-item { padding: 8px; background: #222; border-radius: 6px; font-size: 11px; text-align: left; border: 1px solid #333; color: #666; }
+        .book-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; width: 100%; }
+        .book-item { padding: 6px; background: #222; border-radius: 6px; font-size: 10px; text-align: left; border: 1px solid #333; color: #555; }
         .book-item.unlocked { color: #fff; border-color: var(--unique); }
         .book-item.rare-unlocked { border-color: var(--epic); color: var(--epic); }
 
@@ -52,15 +57,23 @@
     </div>
 
     <div id="book-modal" class="modal">
-        <h2 style="color:var(--gold); margin-top: 0;">빌런 도감 (<span id="book-count-modal">0</span>/50)</h2>
+        <h2 style="color:var(--gold); margin-top: 0;">상세 빌런 도감</h2>
         <div class="book-grid" id="book-grid"></div>
-        <button onclick="toggleBook()" style="margin-top: 20px; background: #444; color: #fff;">업무 복귀</button>
+        <button onclick="toggleBook()" style="margin-top: 20px; background: #444; color: #fff;">닫기</button>
+    </div>
+
+    <div class="book-status-bar">
+        <div style="display:flex; justify-content:space-between; font-size: 11px; font-weight: bold;">
+            <span style="color:var(--gold);">🏆 빌런 도감 현황: <span id="book-main-count">0</span> / 50</span>
+            <span id="player-title" style="color:var(--unique);">신입 사원</span>
+        </div>
+        <div class="book-progress-bg"><div id="book-progress-fill"></div></div>
+        <button class="btn-small" onclick="toggleBook()" style="margin-top:2px; width:100%;">상세 보기</button>
     </div>
 
     <div class="panel">
-        <div style="font-size: 12px; margin-bottom: 10px; font-weight: bold; color: var(--gold); display: flex; justify-content: space-between; align-items: center;">
-            <span>나의 전투력 (Lv.<span id="lv-display">1</span>)</span>
-            <button class="btn-small" onclick="toggleBook()">도감</button>
+        <div style="font-size: 12px; margin-bottom: 10px; font-weight: bold; color: var(--text-main);">
+            <span>전투 장비 (Lv.<span id="lv-display">1</span>)</span>
         </div>
         <div class="equip-grid">
             <div class="equip-slot"><span>공격</span><div class="equip-name" id="eq-weapon">맨주먹</div></div>
@@ -86,7 +99,7 @@
 
     <div class="panel" style="border-left: 4px solid var(--danger);">
         <div style="display:flex; justify-content:space-between; align-items: center;">
-            <div id="m-name" style="font-weight:900; font-size: 16px;">찾는 중...</div>
+            <div id="m-name" style="font-weight:900; font-size: 16px;">빌런 대기 중...</div>
             <div id="m-hp-text" style="font-size: 11px; color: #888;">0 / 0</div>
         </div>
         <div class="hp-bar-bg"><div id="m-hp-bar" class="hp-fill" style="background:var(--danger); width:100%;"></div></div>
@@ -96,7 +109,7 @@
 </div>
 
 <script>
-    // [1] 빌런 50종 및 고유 기술명(skill) 추가
+    // [기존 몬스터/아이템 데이터 유지]
     const MONSTERS = {
         normal: [
             { name: "출근 대리님", hp: 60, atk: 5, skill: "서류 던지기", killMsg: "거 김대리, 이 서류 오늘까지야.", unique: {type: 'weapon', name: "★ 대리님의 서류뭉치", val: 40} },
@@ -137,7 +150,7 @@
             { name: "옆집 택배 오배송", hp: 130, atk: 25, skill: "신선도 하락", killMsg: "냉동식품이 다 녹았습니다.", unique: {type: 'neck', name: "★ 오배송 추적 장치", val: 40} },
             { name: "카공족의 눈총", hp: 95, atk: 20, skill: "한숨 쉬기", killMsg: "키보드 소리가 죄인가요?", unique: {type: 'glove', name: "★ 무소음 키보드 스킨", val: 30} },
             { name: "보이스 피싱", hp: 100, atk: 20, skill: "검찰 사칭", killMsg: "서울 중앙 지검이라면서요.", unique: {type: 'neck', name: "★ 통화 녹음기", val: 30} },
-            { name: "중고나라 벽돌", hp: 140, atk: 35, killMsg: "아이폰 대신 벽돌이 옴.", skill: "택배 바꿔치기", unique: {type: 'weapon', name: "★ 사기꾼 검거 영장", val: 60} },
+            { name: "중고나라 벽돌", hp: 140, atk: 35, skill: "택배 바꿔치기", killMsg: "아이폰 대신 벽돌이 옴.", unique: {type: 'weapon', name: "★ 사기꾼 검거 영장", val: 60} },
             { name: "무한 로딩 지옥", hp: 85, atk: 15, skill: "뱅글뱅글 저주", killMsg: "빙글빙글 지옥.", unique: {type: 'wrist', name: "★ 기가 인터넷 워치", val: 25} }
         ],
         rare: [
@@ -154,7 +167,6 @@
         ]
     };
 
-    // [2] 부위별 20단계 아이템 명칭
     const ITEM_NAMES = {
         weapon: ["빈 물병", "잘 갈린 연필", "탕비실 티스푼", "무거운 전공서적", "말 안듣는 마우스", "법적 대응 통지서", "내용증명서", "사직서(미제출)", "팩트 폭격기", "부장님 뒷담화 캡처본", "노동청 신고버튼", "과로사 직전의 눈빛", "미친듯한 타이핑", "논리 정연한 메일", "전국민 청원서", "키보드 샷건", "금융치료 주문서", "로또 1등 당첨권", "건물주 등기권리증", "절대적 '아니오' 권한"],
         hat: ["구멍난 비니", "다이소 귀마개", "헝클어진 머리", "투명 인간 헬멧", "사회적 가면", "뒷담화 필터 이어폰", "스트레스 완화 헤드셋", "무적의 긍정 마인드", "안들리는 척 귀마개", "현자타임용 고깔", "불면증 안대", "해탈의 서클릿", "자본주의의 미소", "강철 멘탈 투구", "포커 페이스 마스크", "영혼 가출 방지기", "심리 치료 왕관", "열반의 후드", "퇴근의 광휘", "절대적 무관심의 관"],
@@ -201,8 +213,7 @@
         let growth = 1 + (player.lv * 0.15);
         
         monster = {
-            ...d,
-            hp: Math.floor(d.hp * growth), max: Math.floor(d.hp * growth),
+            ...d, hp: Math.floor(d.hp * growth), max: Math.floor(d.hp * growth),
             atk: Math.floor(d.atk * growth), isRare: isRare
         };
         addLog(`<span class="${isRare?'color-epic':''}">[${monster.name}]</span>(이)가 앞길을 막습니다!`);
@@ -224,16 +235,13 @@
     function battle() {
         if (player.hp <= 0 || bookOpen) return;
         let s = getStats();
-        
-        // 플레이어 공격
         let critHit = Math.random() * 100 < s.crit;
         monster.hp -= s.atk * (critHit ? 2 : 1);
         
         if (monster.hp <= 0) { win(); return; }
 
-        // 빌런 공격 (기술명 포함)
         if (Math.random() * 100 < s.dodge) {
-            addLog(`💨 회피! <span class="skill-name">${monster.skill}</span>(을)를 피했습니다.`);
+            addLog(`💨 회피! <span class="skill-name">${monster.skill}</span> 무시.`);
         } else {
             player.hp -= monster.atk;
             addLog(`💢 <span class="skill-name">${monster.skill}</span>! 멘탈 ${monster.atk} 피해.`);
@@ -264,9 +272,7 @@
                 player.equip[u.type] = { name: u.name, val: u.val, isUnique: true };
                 addLog(`<span class="color-unique">★ 유니크 득템: [${u.name}]</span>`);
             }
-        } else {
-            dropItem();
-        }
+        } else { dropItem(); }
         spawn();
     }
 
@@ -277,10 +283,9 @@
         let tier = Math.floor(Math.random() * (maxTier + 1));
         let val = (tier + 1) * 12 + Math.floor(Math.random() * player.lv);
         let newItem = { name: ITEM_NAMES[type][tier], val: val, isUnique: false, tier: tier };
-        
         if (!player.equip[type] || player.equip[type].val < newItem.val) {
             player.equip[type] = newItem;
-            addLog(`새 장비: [${newItem.name}] 장착.`);
+            addLog(`장비 갱신: [${newItem.name}]`);
         }
     }
 
@@ -312,6 +317,7 @@
         logWin.scrollTop = 0;
     }
 
+    // [MODIFIED] 도감 및 UI 업데이트
     function updateUI() {
         let s = getStats();
         document.getElementById('p-hp-bar').style.width = (player.hp / s.hp * 100) + "%";
@@ -324,7 +330,20 @@
         document.getElementById('lv-display').innerText = player.lv;
         document.getElementById('gold-display').innerText = player.gold.toLocaleString();
         document.getElementById('heal-count').innerText = `(${player.potion})`;
-        document.getElementById('book-count-modal').innerText = Object.keys(player.book).length;
+        
+        // 도감 진행도 업데이트
+        const count = Object.keys(player.book).length;
+        document.getElementById('book-main-count').innerText = count;
+        document.getElementById('book-progress-fill').style.width = (count / 50 * 100) + "%";
+        
+        // 칭호 업데이트
+        let title = "신입 사원";
+        if (count >= 50) title = "세계의 구원자(퇴사자)";
+        else if (count >= 40) title = "전설의 사장님";
+        else if (count >= 30) title = "무적의 부장님";
+        else if (count >= 20) title = "베테랑 과장";
+        else if (count >= 10) title = "능숙한 대리";
+        document.getElementById('player-title').innerText = title;
 
         for (let t in player.equip) {
             const el = document.getElementById(`eq-${t}`);
