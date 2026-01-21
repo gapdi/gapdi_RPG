@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VILLAIN HUNTER : 50 Villains (50% Heal Edition)</title>
+    <title>VILLAIN HUNTER : Infinite Lunch Edition</title>
     <style>
         :root {
             --bg-color: #0c0c0c; --panel-bg: #1a1a1a; --text-main: #eeeeee;
@@ -58,7 +58,7 @@
             <span>HP <span id="p-hp">100</span> / <span id="p-max">100</span></span>
         </div>
         <div class="hp-bar-bg"><div id="p-hp-bar" class="hp-fill" style="background:#fff;"></div></div>
-        <button id="heal-btn" style="width:100%" onclick="usePotion()">🍕 점심 식사 <span id="heal-count">(0)</span></button>
+        <button id="heal-btn" style="width:100%; background: #00ff00; color: #000;" onclick="usePotion()">🍕 점심 식사 보충 <span id="heal-count">(0)</span></button>
         <div style="font-size:12px; color:#aaa; display:flex; justify-content:space-between; margin-top:12px;">
             <span>GOLD: <span id="gold" class="color-gold">0</span></span>
             <span>LV: <span id="lv-display">1</span></span>
@@ -98,7 +98,7 @@
             { name: "저장 안한 문서", skill: "블루스크린 강림", hp: 200, atk: 70, drop: "암모니아", gold: 120, killMsg: "8시간의 작업물이 증발했습니다." },
             { name: "급똥 신호", skill: "괄약근 압박", hp: 180, atk: 55, drop: "암모니아", gold: 110, killMsg: "가장 가까운 화장실은 1km 밖이었습니다." },
             { name: "스포일러 빌런", skill: "범인 유출", hp: 110, atk: 25, drop: "사직서", gold: 50, killMsg: "사실 주인공 꿈이었음." },
-            { name: "화장실 휴지없음", skill: "빈 심심이", hp: 190, atk: 45, drop: "암모니아", gold: 100, killMsg: "신께 기도했지만 양말만 쳐다보게 되었습니다." },
+            { name: "화장실 휴지없음", skill: "빈 심심이", hp: 190, atk: 45, drop: "암모니아", gold: 100, killMsg: "양말만 쳐다보게 되었습니다." },
             { name: "잔액 부족 카드", skill: "결제 거부", hp: 110, atk: 30, drop: "사직서", gold: 55, killMsg: "뒤에 줄 선 사람들의 한숨 소리가 들립니다." },
             { name: "데이터 없는 폰", skill: "로딩 지옥", hp: 50, atk: 10, drop: "눅눅한 튀김옷", gold: 20, killMsg: "지하철에서 유튜브가 멈췄습니다." },
             { name: "이어폰 한쪽 고장", skill: "모노 사운드", hp: 90, atk: 15, drop: "눅눅한 튀김옷", gold: 35, killMsg: "왼쪽 귀가 적막에 휩싸였습니다." },
@@ -110,7 +110,7 @@
             { name: "안 씻은 텀블러", skill: "곰팡이 향기", hp: 65, atk: 18, drop: "눅눅한 튀김옷", gold: 25, killMsg: "일주일 전 라떼 냄새에 중독되었습니다." },
             { name: "만원 버스 백팩", skill: "등 뒤의 압박", hp: 120, atk: 25, drop: "눅눅한 튀김옷", gold: 45, killMsg: "누군가의 가방이 갈비뼈를 누릅니다." },
             { name: "겨울철 정전기", skill: "스파크 샷", hp: 90, atk: 40, drop: "눅눅한 튀김옷", gold: 35, killMsg: "손끝에서 번개가 쳤습니다." },
-            { name: "비오는 흰 운동화", skill: "흙탕물 침투", hp: 110, atk: 22, drop: "눅눅한 튀김옷", gold: 40, killMsg: "오늘 처음 신은 신발이 걸레가 되었습니다." },
+            { name: "비오는 흰 운동화", skill: "흙탕물 침투", hp: 110, atk: 22, drop: "눅눅한 튀김옷", gold: 40, killMsg: "신발이 걸레가 되었습니다." },
             { name: "잘못 보낸 카톡", skill: "부장님께 고백", hp: 150, atk: 60, drop: "사직서", gold: 90, killMsg: "사회적 죽음을 맞이했습니다." },
             { name: "침대 밑 리모컨", skill: "심연", hp: 70, atk: 12, drop: "눅눅한 튀김옷", gold: 22, killMsg: "손이 닿지 않아 TV를 끄지 못했습니다." },
             { name: "안 지워지는 얼룩", hp: 100, atk: 20, drop: "눅눅한 튀김옷", gold: 35, killMsg: "마라탕 국물은 무적입니다." },
@@ -124,10 +124,10 @@
             { name: "조별과제 프리라이더", skill: "잠수 타기", hp: 140, atk: 25, drop: "눅눅한 튀김옷", gold: 55, killMsg: "혈압 상승으로 뒷목을 잡았습니다." },
             { name: "빨간불 횡단보도", skill: "간발의 차이", hp: 85, atk: 10, drop: "눅눅한 튀김옷", gold: 25, killMsg: "눈앞에서 버스가 떠나갔습니다." },
             { name: "스피커 켜진 야동", skill: "공공장소 수치사", hp: 250, atk: 99, drop: "암모니아", gold: 200, killMsg: "카페 안의 모든 시선이 당신을 향합니다." },
-            { name: "유통기한 지난 우유", skill: "복통의 일격", hp: 110, atk: 50, drop: "눅눅한 튀김옷", gold: 45, killMsg: "이미 목구멍을 넘어갔을 땐 늦었습니다." },
+            { name: "유통기한 지난 우유", skill: "복통의 일격", hp: 110, atk: 50, drop: "눅눅한 튀김옷", gold: 45, killMsg: "이미 목구멍을 넘어갔습니다." },
             { name: "택배 오배송", skill: "옆집으로 배달", hp: 130, atk: 20, drop: "사직서", gold: 60, killMsg: "내 소중한 물건이 5층으로 갔습니다." },
             { name: "카공족의 눈총", skill: "키보드 소리 검열", hp: 90, atk: 18, drop: "눅눅한 튀김옷", gold: 30, killMsg: "노트북 타이핑 한 번에 살기를 느꼈습니다." },
-            { name: "광고 전화 02", skill: "보이스 피싱", hp: 100, atk: 15, drop: "눅눅한 튀김옷", gold: 40, killMsg: "검찰청 사칭에 낚여 멘탈이 털렸습니다." },
+            { name: "광고 전화 02", skill: "보이스 피싱", hp: 100, atk: 15, drop: "눅눅한 튀김옷", gold: 40, killMsg: "검찰청 사칭에 낚였습니다." },
             { name: "지하철 앞사람 백팩", skill: "얼굴 타격", hp: 115, atk: 28, drop: "눅눅한 튀김옷", gold: 45, killMsg: "가방 모서리가 광대뼈를 강타했습니다." },
             { name: "무한 로딩 스피너", skill: "빙글빙글 지옥", hp: 80, atk: 10, drop: "눅눅한 튀김옷", gold: 25, killMsg: "화면만 보다 눈이 멀었습니다." }
         ],
@@ -149,10 +149,10 @@
     const initialStats = { lv:1, atk:10, hp:100, maxHp:100, gold:0, inv:{}, book:{}, rebirthCount:0, potion:1, totalKills:0 };
 
     function initGame() {
-        const saved = localStorage.getItem('vh_final_v50_50h');
+        const saved = localStorage.getItem('vh_final_v50_fix');
         player = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(initialStats));
         player.isDead = false;
-        addLog("사냥 시작! 빌런 처치 시 체력이 50% 회복됩니다.");
+        addLog("사냥 시작! 빌런 처치 시 체력 50% 회복 및 점심 식사(🍕) 100% 획득!");
         spawn();
         updateUI();
     }
@@ -198,11 +198,16 @@
         player.totalKills++;
         player.book[monster.name] = (player.book[monster.name] || 0) + 1;
         
-        // ★ 체력 50% 회복 로직 적용
+        // ★ 체력 50% 즉시 회복
         const healAmt = Math.floor(player.maxHp * 0.5);
         player.hp = Math.min(player.maxHp, player.hp + healAmt);
         
-        addLog(`${monster.name} 처치! <span style="color:#00ff00">+${healAmt}HP 회복</span>`);
+        // ★ 점심 식사(회복 아이템) 100% 확정 획득
+        player.potion++;
+        
+        addLog(`${monster.name} 처치! <span style="color:#00ff00">+${healAmt}HP 회복 & 🍕 획득</span>`);
+        
+        // 일반 전리품 확률 획득
         if(Math.random() < 0.45) player.inv[monster.drop] = (player.inv[monster.drop] || 0) + 1;
         
         if(Object.keys(player.book).length >= 50) {
@@ -242,12 +247,12 @@
 
     function hardReset() {
         if(confirm("모든 데이터를 초기화할까요?")) {
-            localStorage.removeItem('vh_final_v50_50h');
+            localStorage.removeItem('vh_final_v50_fix');
             location.reload();
         }
     }
 
-    function save() { localStorage.setItem('vh_final_v50_50h', JSON.stringify(player)); }
+    function save() { localStorage.setItem('vh_final_v50_fix', JSON.stringify(player)); }
 
     function updateUI() {
         document.getElementById('p-hp').innerText = Math.floor(player.hp);
@@ -280,8 +285,9 @@
     function usePotion() {
         if(player.potion > 0 && !player.isDead) {
             player.potion--;
+            // 포션 효율 상향 (최대 체력 80% 회복)
             player.hp = Math.min(player.maxHp, player.hp + Math.floor(player.maxHp * 0.8));
-            addLog("🍕 에너지를 보충했습니다.");
+            addLog("🍕 든든한 점심 식사로 멘탈을 회복했습니다!");
             updateUI();
         }
     }
@@ -289,7 +295,7 @@
     function craft(n, a, h, m, c) {
         if((player.inv[m]||0) >= c) {
             player.inv[m] -= c; player.atk += a; player.maxHp += h; player.hp = player.maxHp;
-            addLog(`🛠 [${n}] 강화! ATK+${a} HP+${h}`);
+            addLog(`🛠 [${n}] 강화 완료!`);
             updateUI(); save();
         }
     }
