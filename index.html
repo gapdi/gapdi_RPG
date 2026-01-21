@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VILLAIN HUNTER : Infinite Lunch Edition</title>
+    <title>VILLAIN HUNTER : White Heal Edition</title>
     <style>
         :root {
             --bg-color: #0c0c0c; --panel-bg: #1a1a1a; --text-main: #eeeeee;
@@ -58,7 +58,7 @@
             <span>HP <span id="p-hp">100</span> / <span id="p-max">100</span></span>
         </div>
         <div class="hp-bar-bg"><div id="p-hp-bar" class="hp-fill" style="background:#fff;"></div></div>
-        <button id="heal-btn" style="width:100%; background: #00ff00; color: #000;" onclick="usePotion()">🍕 점심 식사 보충 <span id="heal-count">(0)</span></button>
+        <button id="heal-btn" style="width:100%; background: #ffffff; color: #000000; border: 1px solid #ccc;" onclick="usePotion()">🍕 점심 식사 사용 <span id="heal-count">(0)</span></button>
         <div style="font-size:12px; color:#aaa; display:flex; justify-content:space-between; margin-top:12px;">
             <span>GOLD: <span id="gold" class="color-gold">0</span></span>
             <span>LV: <span id="lv-display">1</span></span>
@@ -149,10 +149,10 @@
     const initialStats = { lv:1, atk:10, hp:100, maxHp:100, gold:0, inv:{}, book:{}, rebirthCount:0, potion:1, totalKills:0 };
 
     function initGame() {
-        const saved = localStorage.getItem('vh_final_v50_fix');
+        const saved = localStorage.getItem('vh_v50_white');
         player = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(initialStats));
         player.isDead = false;
-        addLog("사냥 시작! 빌런 처치 시 체력 50% 회복 및 점심 식사(🍕) 100% 획득!");
+        addLog("사냥 시작! 빌런 처치 시 체력 50% 회복 및 🍕 획득.");
         spawn();
         updateUI();
     }
@@ -197,19 +197,11 @@
         player.gold += monster.gold;
         player.totalKills++;
         player.book[monster.name] = (player.book[monster.name] || 0) + 1;
-        
-        // ★ 체력 50% 즉시 회복
         const healAmt = Math.floor(player.maxHp * 0.5);
         player.hp = Math.min(player.maxHp, player.hp + healAmt);
-        
-        // ★ 점심 식사(회복 아이템) 100% 확정 획득
         player.potion++;
-        
-        addLog(`${monster.name} 처치! <span style="color:#00ff00">+${healAmt}HP 회복 & 🍕 획득</span>`);
-        
-        // 일반 전리품 확률 획득
+        addLog(`${monster.name} 처치! <span style="color:#00ff00">+${healAmt}HP & 🍕 획득</span>`);
         if(Math.random() < 0.45) player.inv[monster.drop] = (player.inv[monster.drop] || 0) + 1;
-        
         if(Object.keys(player.book).length >= 50) {
             player.isDead = true;
             document.getElementById('ending-ui').style.display = 'flex';
@@ -247,12 +239,12 @@
 
     function hardReset() {
         if(confirm("모든 데이터를 초기화할까요?")) {
-            localStorage.removeItem('vh_final_v50_fix');
+            localStorage.removeItem('vh_v50_white');
             location.reload();
         }
     }
 
-    function save() { localStorage.setItem('vh_final_v50_fix', JSON.stringify(player)); }
+    function save() { localStorage.setItem('vh_v50_white', JSON.stringify(player)); }
 
     function updateUI() {
         document.getElementById('p-hp').innerText = Math.floor(player.hp);
@@ -285,7 +277,6 @@
     function usePotion() {
         if(player.potion > 0 && !player.isDead) {
             player.potion--;
-            // 포션 효율 상향 (최대 체력 80% 회복)
             player.hp = Math.min(player.maxHp, player.hp + Math.floor(player.maxHp * 0.8));
             addLog("🍕 든든한 점심 식사로 멘탈을 회복했습니다!");
             updateUI();
