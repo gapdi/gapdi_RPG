@@ -3,295 +3,326 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VILLAIN HUNTER : White Heal Edition</title>
+    <title>VILLAIN HUNTER : THE COMPLETE EDITION</title>
     <style>
         :root {
             --bg-color: #0c0c0c; --panel-bg: #1a1a1a; --text-main: #eeeeee;
             --common: #ffffff; --rare: #ffff00; --epic: #bf00ff;
-            --danger: #ff4444; --border: #333333; --gold: #ffd700;
+            --unique: #00f2ff; --danger: #ff4444; --border: #333333; --gold: #ffd700;
         }
-        body { background: var(--bg-color); color: var(--text-main); font-family: 'Pretendard', sans-serif; display: flex; justify-content: center; padding: 20px; margin: 0; line-height: 1.4; }
-        #game-container { width: 100%; max-width: 420px; background: var(--panel-bg); border-radius: 20px; padding: 25px; border: 1px solid var(--border); position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid var(--border); padding-bottom: 10px; }
+        body { background: var(--bg-color); color: var(--text-main); font-family: 'Pretendard', sans-serif; display: flex; justify-content: center; padding: 20px; margin: 0; line-height: 1.4; font-size: 14px; }
+        #game-container { width: 100%; max-width: 480px; background: var(--panel-bg); border-radius: 20px; padding: 25px; border: 1px solid var(--border); position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        
+        .equip-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 15px; }
+        .equip-slot { background: #000; border: 1px solid #444; padding: 6px; border-radius: 8px; text-align: center; font-size: 10px; height: 65px; display: flex; flex-direction: column; justify-content: center; overflow: hidden; }
+        .equip-slot span { color: #888; display: block; margin-bottom: 2px; font-size: 9px; }
+        .equip-name { color: #fff; font-weight: bold; line-height: 1.1; word-break: keep-all; font-size: 10px; }
+
         .panel { background: rgba(255,255,255,0.05); border-radius: 12px; padding: 15px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1); }
-        .color-common { color: var(--common); }
-        .color-rare { color: var(--rare); font-weight: bold; }
-        .color-epic { color: var(--epic); font-weight: bold; text-shadow: 0 0 5px var(--epic); }
-        .color-gold { color: var(--gold); font-weight: 900; }
         .hp-bar-bg { width: 100%; height: 12px; background: #222; margin: 8px 0; border-radius: 6px; overflow: hidden; border: 1px solid #333; }
         .hp-fill { height: 100%; transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        button { background: #fff; color: #000; border: none; padding: 12px; cursor: pointer; font-weight: 900; border-radius: 8px; transition: 0.2s; }
-        button:active { transform: scale(0.95); }
-        button:disabled { background: #333; color: #666; cursor: not-allowed; transform: none; }
-        #log-window { height: 130px; overflow-y: auto; font-size: 13px; color: #bbb; display: flex; flex-direction: column-reverse; gap: 6px; padding: 12px; background: #000; border-radius: 10px; border: 1px solid #333; margin-bottom: 10px; }
-        .skill-text { color: #ff8800; font-weight: bold; font-size: 12px; }
-        .modal { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 100; padding: 30px; box-sizing: border-box; background: rgba(0,0,0,0.95); flex-direction: column; align-items: center; justify-content: center; text-align: center; border-radius: 20px; }
-        .death-msg { color: var(--danger); font-style: italic; margin: 15px 0; font-size: 16px; line-height: 1.5; word-break: keep-all; }
-        .reset-btn { background: transparent; color: #555; font-size: 11px; text-decoration: underline; margin-top: 15px; border: none; cursor: pointer; }
+        
+        button { background: #ffffff; color: #000000; border: none; padding: 12px; cursor: pointer; font-weight: 900; border-radius: 8px; width: 100%; border: 1px solid #ccc; font-size: 14px; }
+        button:active { transform: scale(0.98); }
+        button:disabled { background: #333; color: #666; cursor: not-allowed; border: none; }
+
+        #log-window { height: 120px; overflow-y: auto; font-size: 12px; color: #bbb; display: flex; flex-direction: column-reverse; gap: 5px; padding: 12px; background: #000; border-radius: 10px; border: 1px solid #333; margin-top: 10px; }
+        .modal { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 100; background: rgba(0,0,0,0.95); flex-direction: column; align-items: center; justify-content: center; text-align: center; border-radius: 20px; padding: 20px; }
+        
+        .color-unique { color: var(--unique) !important; text-shadow: 0 0 5px var(--unique); }
+        .color-epic { color: var(--epic); }
+        .color-rare { color: var(--rare); }
+        .unique-alert { color: var(--unique); font-weight: bold; animation: pulse 1s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
     </style>
 </head>
 <body>
 
 <div id="game-container">
     <div id="game-over" class="modal">
-        <h1 style="color:var(--danger); margin-bottom: 0; font-size: 40px;">DEFEATED</h1>
-        <div id="killer-info" style="font-size: 14px; color: #888; margin-top: 10px;"></div>
-        <div id="final-skill" class="skill-text" style="font-size:18px; margin-top:10px;"></div>
-        <div class="death-msg" id="death-quote"></div>
-        <button onclick="revive()" style="width: 80%; background: var(--danger); color: #fff;">다시 도전 (GOLD 유지)</button>
+        <h1 style="color:var(--danger); font-size: 40px; margin-bottom: 0;">MENTAL BREAK</h1>
+        <div id="killer-name" style="font-weight: bold; margin-top: 10px; color: #fff;"></div>
+        <div id="death-quote" style="font-style: italic; margin: 20px 0; color: var(--danger); font-size: 16px;"></div>
+        <button onclick="location.reload()">사회생활 재입사 (처음부터)</button>
     </div>
 
-    <div id="ending-ui" class="modal">
-        <h1 class="color-epic">VILLAIN MASTER</h1>
-        <p>50종의 빌런을 모두 정복했습니다!</p>
-        <button onclick="rebirth()" style="width: 80%;">전설로 환생</button>
-    </div>
-
-    <div class="header">
-        <strong>VILLAIN HUNTER</strong>
-        <div style="font-size:11px">도감: <span id="book-count-header" class="color-rare">0</span>/50</div>
+    <div class="panel">
+        <div style="font-size: 12px; margin-bottom: 10px; font-weight: bold; color: var(--gold); display: flex; justify-content: space-between;">
+            <span>현대인 군장 (Lv.<span id="lv-display">1</span>)</span>
+            <span>도감 처치: <span id="book-count" class="color-unique">0</span> / 50</span>
+        </div>
+        <div class="equip-grid">
+            <div class="equip-slot"><span>공격(무기)</span><div class="equip-name" id="eq-weapon">맨주먹</div></div>
+            <div class="equip-slot"><span>멘탈(모자)</span><div class="equip-name" id="eq-hat">-</div></div>
+            <div class="equip-slot"><span>체력(상의)</span><div class="equip-name" id="eq-top">-</div></div>
+            <div class="equip-slot"><span>버티기(하의)</span><div class="equip-name" id="eq-bottom">-</div></div>
+            <div class="equip-slot"><span>일머리(장갑)</span><div class="equip-name" id="eq-glove">-</div></div>
+            <div class="equip-slot"><span>운(목걸이)</span><div class="equip-name" id="eq-neck">-</div></div>
+            <div class="equip-slot"><span>감각(손목)</span><div class="equip-name" id="eq-wrist">-</div></div>
+            <div class="equip-slot" style="border-color: var(--gold);"><span>비상금</span><div class="equip-name color-gold" id="gold-display">0</div></div>
+        </div>
     </div>
     
     <div class="panel">
-        <div style="display:flex; justify-content:space-between; font-weight:bold;">
-            <span id="atk-display">ATK 10</span>
-            <span>HP <span id="p-hp">100</span> / <span id="p-max">100</span></span>
+        <div style="display:flex; justify-content:space-between; font-size: 11px; margin-bottom: 5px; color: #aaa;">
+            <span id="stat-atk">말빨: 10</span>
+            <span id="stat-crit">치명타: 5%</span>
+            <span id="stat-dodge">회피: 5%</span>
+        </div>
+        <div style="font-weight: bold; display: flex; justify-content: space-between;">
+            <span>나의 멘탈 게이지</span>
+            <span><span id="p-hp">100</span> / <span id="p-max">100</span></span>
         </div>
         <div class="hp-bar-bg"><div id="p-hp-bar" class="hp-fill" style="background:#fff;"></div></div>
-        <button id="heal-btn" style="width:100%; background: #ffffff; color: #000000; border: 1px solid #ccc;" onclick="usePotion()">🍕 점심 식사 사용 <span id="heal-count">(0)</span></button>
-        <div style="font-size:12px; color:#aaa; display:flex; justify-content:space-between; margin-top:12px;">
-            <span>GOLD: <span id="gold" class="color-gold">0</span></span>
-            <span>LV: <span id="lv-display">1</span></span>
-            <span>RE: <span id="re-count" class="color-epic">0</span></span>
-        </div>
+        <button id="heal-btn" onclick="usePotion()">🍕 점심 식사 (HP 80% 회복) <span id="heal-count">(0)</span></button>
     </div>
 
     <div class="panel" style="border-left: 4px solid var(--danger);">
-        <div id="m-name" style="font-weight:900; font-size:17px;">Target</div>
-        <div class="hp-bar-bg"><div id="m-hp-bar" class="hp-fill" style="background:var(--danger);"></div></div>
-        <div id="m-hp-text" style="text-align:right; font-size:11px; color: #888;">0 / 0</div>
-    </div>
-
-    <div class="panel">
-        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;">
-            <button class="color-common" id="btn1" onclick="craft('효자손', 15, 25, '눅눅한 튀김옷', 3)">효자손</button>
-            <button class="color-rare" id="btn2" onclick="craft('편지', 60, 120, '사직서', 1)">편지</button>
-            <button class="color-epic" id="btn3" onclick="craft('솔', 200, 400, '암모니아', 1)">솔</button>
+        <div style="display:flex; justify-content:space-between; align-items: center;">
+            <div id="m-name" style="font-weight:900; font-size: 16px;">빌런 탐색 중...</div>
+            <div id="m-hp-text" style="font-size: 11px; color: #888;">0 / 0</div>
         </div>
-        <div id="inv" style="font-size:11px; margin-top:12px; color:#888; text-align: center;">소재 없음</div>
+        <div class="hp-bar-bg"><div id="m-hp-bar" class="hp-fill" style="background:var(--danger);"></div></div>
     </div>
 
     <div id="log-window"></div>
-    <div style="text-align: center;">
-        <button class="reset-btn" onclick="hardReset()">데이터 초기화</button>
-    </div>
 </div>
 
 <script>
+    // [1] 빌런 50종 데이터 (일반 40 + 레어 10)
     const MONSTERS = {
         normal: [
-            { name: "출근 대리님", skill: "서류 뭉치 던지기", hp: 60, atk: 5, drop: "눅눅한 튀김옷", gold: 20, killMsg: "거 김대리, 이 서류 오늘까지야." },
-            { name: "법카 부장님", skill: "아재개그 난사", hp: 75, atk: 8, drop: "눅눅한 튀김옷", gold: 25, killMsg: "오늘 회식은 삼겹살이다!" },
-            { name: "라떼 차장님", skill: "나때는 말이야", hp: 80, atk: 10, drop: "눅눅한 튀김옷", gold: 30, killMsg: "나 때는 말이야, 휴가 같은 거 몰랐어." },
-            { name: "퇴근직전 팀장님", skill: "가기전에 잠깐만", hp: 130, atk: 22, drop: "사직서", gold: 60, killMsg: "아, 가기 전에 이것만 좀 고쳐줄래?" },
-            { name: "새끼발가락 찧음", skill: "모서리 카운터", hp: 200, atk: 65, drop: "암모니아", gold: 110, killMsg: "(비명과 함께 정신이 아득해집니다.)" },
-            { name: "저장 안한 문서", skill: "블루스크린 강림", hp: 200, atk: 70, drop: "암모니아", gold: 120, killMsg: "8시간의 작업물이 증발했습니다." },
-            { name: "급똥 신호", skill: "괄약근 압박", hp: 180, atk: 55, drop: "암모니아", gold: 110, killMsg: "가장 가까운 화장실은 1km 밖이었습니다." },
-            { name: "스포일러 빌런", skill: "범인 유출", hp: 110, atk: 25, drop: "사직서", gold: 50, killMsg: "사실 주인공 꿈이었음." },
-            { name: "화장실 휴지없음", skill: "빈 심심이", hp: 190, atk: 45, drop: "암모니아", gold: 100, killMsg: "양말만 쳐다보게 되었습니다." },
-            { name: "잔액 부족 카드", skill: "결제 거부", hp: 110, atk: 30, drop: "사직서", gold: 55, killMsg: "뒤에 줄 선 사람들의 한숨 소리가 들립니다." },
-            { name: "데이터 없는 폰", skill: "로딩 지옥", hp: 50, atk: 10, drop: "눅눅한 튀김옷", gold: 20, killMsg: "지하철에서 유튜브가 멈췄습니다." },
-            { name: "이어폰 한쪽 고장", skill: "모노 사운드", hp: 90, atk: 15, drop: "눅눅한 튀김옷", gold: 35, killMsg: "왼쪽 귀가 적막에 휩싸였습니다." },
-            { name: "스팸 전화 070", skill: "강제 벨소리", hp: 40, atk: 5, drop: "눅눅한 튀김옷", gold: 15, killMsg: "대출 상담원이 멘탈을 털어갔습니다." },
-            { name: "읽씹하는 썸남썸녀", skill: "숫자 1 안사라짐", hp: 140, atk: 35, drop: "사직서", gold: 75, killMsg: "당신은 그에게 '읽지도 않은' 사람입니다." },
-            { name: "층간소음 망치", skill: "새벽의 드릴", hp: 160, atk: 40, drop: "암모니아", gold: 85, killMsg: "윗집의 공사는 24시간 계속됩니다." },
-            { name: "광고 건너뛰기 불가", skill: "15초의 형벌", hp: 80, atk: 12, drop: "눅눅한 튀김옷", gold: 30, killMsg: "관심 없는 광고를 다 봤습니다." },
-            { name: "안터지는 WIFI", skill: "연결 없음", hp: 75, atk: 14, drop: "눅눅한 튀김옷", gold: 28, killMsg: "중요한 순간에 끊겼습니다." },
-            { name: "안 씻은 텀블러", skill: "곰팡이 향기", hp: 65, atk: 18, drop: "눅눅한 튀김옷", gold: 25, killMsg: "일주일 전 라떼 냄새에 중독되었습니다." },
-            { name: "만원 버스 백팩", skill: "등 뒤의 압박", hp: 120, atk: 25, drop: "눅눅한 튀김옷", gold: 45, killMsg: "누군가의 가방이 갈비뼈를 누릅니다." },
-            { name: "겨울철 정전기", skill: "스파크 샷", hp: 90, atk: 40, drop: "눅눅한 튀김옷", gold: 35, killMsg: "손끝에서 번개가 쳤습니다." },
-            { name: "비오는 흰 운동화", skill: "흙탕물 침투", hp: 110, atk: 22, drop: "눅눅한 튀김옷", gold: 40, killMsg: "신발이 걸레가 되었습니다." },
-            { name: "잘못 보낸 카톡", skill: "부장님께 고백", hp: 150, atk: 60, drop: "사직서", gold: 90, killMsg: "사회적 죽음을 맞이했습니다." },
-            { name: "침대 밑 리모컨", skill: "심연", hp: 70, atk: 12, drop: "눅눅한 튀김옷", gold: 22, killMsg: "손이 닿지 않아 TV를 끄지 못했습니다." },
-            { name: "안 지워지는 얼룩", hp: 100, atk: 20, drop: "눅눅한 튀김옷", gold: 35, killMsg: "마라탕 국물은 무적입니다." },
-            { name: "비번 5회 오류", skill: "계정 잠금", hp: 140, atk: 45, drop: "사직서", gold: 70, killMsg: "본인 인증의 늪에 빠져 사망했습니다." },
-            { name: "USB 방향 반대로", skill: "무한 뒤집기", hp: 45, atk: 8, drop: "눅눅한 튀김옷", gold: 12, killMsg: "3번을 뒤집어도 들어가지 않았습니다." },
-            { name: "깜빡한 에어컨", skill: "전기세 폭탄", hp: 170, atk: 30, drop: "사직서", gold: 100, killMsg: "휴가 3일 내내 빈 집이 시원했습니다." },
-            { name: "눅눅해진 시리얼", hp: 40, atk: 4, drop: "눅눅한 튀김옷", gold: 10, killMsg: "바삭함이 없는 삶은 의미가 없습니다." },
-            { name: "안 열리는 병뚜껑", hp: 95, atk: 15, drop: "눅눅한 튀김옷", gold: 35, killMsg: "아귀힘이 다 빠져 굶어 죽었습니다." },
-            { name: "고장난 키보드", skill: "엔터키 먹통", hp: 130, atk: 30, drop: "사직서", gold: 65, killMsg: "보고서를 완성했지만 제출할 수 없습니다." },
-            { name: "입금 전 클라이언트", skill: "시안 50번 수정", hp: 210, atk: 40, drop: "사직서", gold: 110, killMsg: "첫 번째 시안이 제일 낫네요." },
-            { name: "조별과제 프리라이더", skill: "잠수 타기", hp: 140, atk: 25, drop: "눅눅한 튀김옷", gold: 55, killMsg: "혈압 상승으로 뒷목을 잡았습니다." },
-            { name: "빨간불 횡단보도", skill: "간발의 차이", hp: 85, atk: 10, drop: "눅눅한 튀김옷", gold: 25, killMsg: "눈앞에서 버스가 떠나갔습니다." },
-            { name: "스피커 켜진 야동", skill: "공공장소 수치사", hp: 250, atk: 99, drop: "암모니아", gold: 200, killMsg: "카페 안의 모든 시선이 당신을 향합니다." },
-            { name: "유통기한 지난 우유", skill: "복통의 일격", hp: 110, atk: 50, drop: "눅눅한 튀김옷", gold: 45, killMsg: "이미 목구멍을 넘어갔습니다." },
-            { name: "택배 오배송", skill: "옆집으로 배달", hp: 130, atk: 20, drop: "사직서", gold: 60, killMsg: "내 소중한 물건이 5층으로 갔습니다." },
-            { name: "카공족의 눈총", skill: "키보드 소리 검열", hp: 90, atk: 18, drop: "눅눅한 튀김옷", gold: 30, killMsg: "노트북 타이핑 한 번에 살기를 느꼈습니다." },
-            { name: "광고 전화 02", skill: "보이스 피싱", hp: 100, atk: 15, drop: "눅눅한 튀김옷", gold: 40, killMsg: "검찰청 사칭에 낚였습니다." },
-            { name: "지하철 앞사람 백팩", skill: "얼굴 타격", hp: 115, atk: 28, drop: "눅눅한 튀김옷", gold: 45, killMsg: "가방 모서리가 광대뼈를 강타했습니다." },
-            { name: "무한 로딩 스피너", skill: "빙글빙글 지옥", hp: 80, atk: 10, drop: "눅눅한 튀김옷", gold: 25, killMsg: "화면만 보다 눈이 멀었습니다." }
+            { name: "출근 대리님", hp: 60, atk: 5, killMsg: "거 김대리, 이 서류 오늘까지야.", unique: {type: 'weapon', name: "★ 대리님의 서류뭉치", val: 40} },
+            { name: "법카 부장님", hp: 75, atk: 8, killMsg: "오늘 회식은 삼겹살이다!", unique: {type: 'neck', name: "★ 무한 법인카드", val: 30} },
+            { name: "라떼 차장님", hp: 85, atk: 10, killMsg: "나 때는 말이야...", unique: {type: 'hat', name: "★ 라떼 전용 찻잔", val: 35} },
+            { name: "퇴근직전 팀장님", hp: 130, atk: 22, killMsg: "아 가기 전에 이것만 좀...", unique: {type: 'wrist', name: "★ 칼퇴 기원 스마트워치", val: 35} },
+            { name: "새끼발가락 찧음", hp: 200, atk: 65, killMsg: "악!!!!!!", unique: {type: 'bottom', name: "★ 모서리 방지 큐션", val: 70} },
+            { name: "저장 안한 문서", hp: 220, atk: 70, killMsg: "블루스크린은 예고 없이 옵니다.", unique: {type: 'top', name: "★ 자동 저장의 가호", val: 90} },
+            { name: "급똥 신호", hp: 180, atk: 55, killMsg: "하필 지하철은 급행이었습니다.", unique: {type: 'bottom', name: "★ 황금 괄약근 조절기", val: 65} },
+            { name: "스포일러 빌런", hp: 110, atk: 25, killMsg: "사실 주인공 형이 범인임.", unique: {type: 'glove', name: "★ 귀막기용 헤드셋", val: 40} },
+            { name: "화장실 휴지없음", hp: 190, atk: 45, killMsg: "양말을 희생하시겠습니까?", unique: {type: 'neck', name: "★ 비상용 물티슈", val: 50} },
+            { name: "잔액 부족 카드", hp: 110, atk: 30, killMsg: "뒤에 줄 선 사람 15명.", unique: {type: 'neck', name: "★ 한도 무제한 통장", val: 40} },
+            { name: "데이터 없는 폰", hp: 50, atk: 12, killMsg: "로딩 스피너만 10분째.", unique: {type: 'wrist', name: "★ 5G 무제한 에그", val: 20} },
+            { name: "이어폰 한쪽 고장", hp: 90, atk: 15, killMsg: "왼쪽 귀가 외롭습니다.", unique: {type: 'hat', name: "★ 스테레오 골전도", val: 30} },
+            { name: "스팸 전화 070", hp: 45, atk: 5, killMsg: "낮잠 자는데 대출 권유라니.", unique: {type: 'wrist', name: "★ 스팸 자동 차단기", val: 15} },
+            { name: "읽씹 썸녀", hp: 145, atk: 38, killMsg: "숫자 1의 압박.", unique: {type: 'neck', name: "★ 멘탈 복구 사진", val: 50} },
+            { name: "층간소음 망치", hp: 165, atk: 42, killMsg: "윗집에 망치질 신이 삽니다.", unique: {type: 'hat', name: "★ 소음 차단 헬멧", val: 55} },
+            { name: "광고 스킵 불가", hp: 85, atk: 13, killMsg: "15초가 15년 같았습니다.", unique: {type: 'top', name: "★ 프리미엄 멤버십", val: 30} },
+            { name: "안터지는 WIFI", hp: 70, atk: 16, killMsg: "비밀번호가 틀렸대요.", unique: {type: 'wrist', name: "★ 와이파이 증폭기", val: 25} },
+            { name: "안 씻은 텀블러", hp: 60, atk: 20, killMsg: "커피에서 된장 맛이 납니다.", unique: {type: 'glove', name: "★ 살균 세척 솔", val: 20} },
+            { name: "만원 버스 백팩", hp: 125, atk: 28, killMsg: "가방에 밀려 못 내렸습니다.", unique: {type: 'top', name: "★ 백팩 방어 흉갑", val: 45} },
+            { name: "겨울 정전기", hp: 95, atk: 40, killMsg: "찌릿! 손끝이 타들어갑니다.", unique: {type: 'glove', name: "★ 절연 고무 장갑", val: 35} },
+            { name: "비오는 흰 운동화", hp: 110, atk: 24, killMsg: "신발이 늪이 되었습니다.", unique: {type: 'bottom', name: "★ 완전 방수 코팅", val: 40} },
+            { name: "잘못 보낸 카톡", hp: 160, atk: 65, killMsg: "부장님께 '사랑해'라고 보냄.", unique: {type: 'wrist', name: "★ 전송 취소 버튼", val: 60} },
+            { name: "침대 밑 리모컨", hp: 75, atk: 12, killMsg: "결국 일어나서 껐습니다.", unique: {type: 'hat', name: "★ 뇌파 조종 밴드", val: 20} },
+            { name: "안 지워지는 얼룩", hp: 105, atk: 22, killMsg: "최애 셔츠에 마라탕을...", unique: {type: 'top', name: "★ 얼룩 제거 스틱", val: 40} },
+            { name: "비번 5회 오류", hp: 150, atk: 48, killMsg: "30초 뒤에 다시 시도하세요.", unique: {type: 'wrist', name: "★ 지문 인식 센서", val: 50} },
+            { name: "USB 반대로 끼움", hp: 50, atk: 10, killMsg: "뒤집어도 안 들어가요.", unique: {type: 'glove', name: "★ C타입 변환기", val: 15} },
+            { name: "깜빡한 에어컨", hp: 175, atk: 35, killMsg: "고지서에 0이 하나 더...", unique: {type: 'bottom', name: "★ 에너지 1등급 바지", val: 55} },
+            { name: "눅눅한 시리얼", hp: 45, atk: 5, killMsg: "종이 씹는 줄 알았습니다.", unique: {type: 'neck', name: "★ 밀폐 용기 펜던트", val: 15} },
+            { name: "안 열리는 뚜껑", hp: 90, atk: 16, killMsg: "고무장갑 껴도 안 열려요.", unique: {type: 'glove', name: "★ 아귀힘 강화 장갑", val: 30} },
+            { name: "고장난 키보드", hp: 135, atk: 32, killMsg: "엔터키가 빠졌습니다.", unique: {type: 'weapon', name: "★ 기계식 청축 키보드", val: 60} },
+            { name: "입금 전 클라이언트", hp: 220, atk: 45, killMsg: "좀 더 화려하고 심플하게!", unique: {type: 'weapon', name: "★ 최종_진짜최종.psd", val: 80} },
+            { name: "조별과제 프리라이더", hp: 150, atk: 30, killMsg: "저 할아버지가 편찮으셔서...", unique: {type: 'top', name: "★ 무임승차 거부권", val: 50} },
+            { name: "빨간불 횡단보도", hp: 80, atk: 12, killMsg: "버스가 방금 떠났습니다.", unique: {type: 'bottom', name: "★ 초스피드 런닝화", val: 30} },
+            { name: "공공장소 야동스피커", hp: 300, atk: 100, killMsg: "주변의 모든 시선이...", unique: {type: 'hat', name: "★ 수치사 방지 가면", val: 120} },
+            { name: "유통기한 지난 우유", hp: 110, atk: 50, killMsg: "장이 꼬여버렸습니다.", unique: {type: 'bottom', name: "★ 유산균 보호복", val: 50} },
+            { name: "옆집 택배 오배송", hp: 130, atk: 25, killMsg: "냉동식품이 다 녹았습니다.", unique: {type: 'neck', name: "★ 오배송 추적 장치", val: 40} },
+            { name: "카공족의 눈총", hp: 95, atk: 20, killMsg: "키보드 소리가 죄인가요?", unique: {type: 'glove', name: "★ 무소음 키보드 스킨", val: 30} },
+            { name: "보이스 피싱", hp: 100, atk: 20, killMsg: "서울 중앙 지검이라면서요.", unique: {type: 'neck', name: "★ 통화 녹음기", val: 30} },
+            { name: "중고나라 벽돌", hp: 140, atk: 35, killMsg: "아이폰 대신 벽돌이 옴.", unique: {type: 'weapon', name: "★ 사기꾼 검거 영장", val: 60} },
+            { name: "무한 로딩 지옥", hp: 85, atk: 15, killMsg: "빙글빙글... 내 눈도 빙글.", unique: {type: 'wrist', name: "★ 기가 인터넷 워치", val: 25} }
         ],
         rare: [
-            { name: "👑 월요일 8:59AM", skill: "지옥의 알람 소리", hp: 1500, atk: 100, drop: "사직서", gold: 500, killMsg: "어서와, 지옥의 5일이 시작되었단다." },
-            { name: "👑 윈도우 업데이트", skill: "진행률 1%의 저주", hp: 1800, atk: 85, drop: "사직서", gold: 600, killMsg: "발표 직전, PC가 꺼졌습니다." },
-            { name: "👑 액정 파손", skill: "설탕 액정 크래시", hp: 2000, atk: 150, drop: "암모니아", gold: 1000, killMsg: "수리비 35만원이 청구되었습니다." },
-            { name: "👑 명절 잔소리", skill: "취업/결혼 콤보", hp: 1600, atk: 80, drop: "사직서", gold: 700, killMsg: "그래서 돈은 얼마나 모았니?" },
-            { name: "👑 예비군 통지서", skill: "국방의 부름", hp: 1700, atk: 90, drop: "사직서", gold: 800, killMsg: "동원 훈련 대상자로 선정되었습니다." },
-            { name: "👑 누진세 고지서", skill: "전기료 폭탄", hp: 1900, atk: 110, drop: "암모니아", gold: 900, killMsg: "이번 달 월급이 한전에 입금되었습니다." },
-            { name: "👑 배터리 1%", skill: "화면 꺼짐 강권", hp: 1400, atk: 130, drop: "사직서", gold: 750, killMsg: "보조배터리가 가방 속에 없었습니다." },
-            { name: "👑 자니? 전애인", skill: "감성 추억 팔이", hp: 1450, atk: 120, drop: "암모니아", gold: 850, killMsg: "새벽 2시의 자니? 문자는 치명적이었습니다." },
-            { name: "👑 서버 점검 중", skill: "긴급 서비스 점검", hp: 1550, atk: 70, drop: "눅눅한 튀김옷", gold: 500, killMsg: "점검 완료 예정 시간: 미정" },
-            { name: "👑 부장님 개인기", skill: "강제 박수 유도", hp: 1400, atk: 90, drop: "사직서", gold: 650, killMsg: "안 웃으면 내일이 없을 것 같아 죽었습니다." }
+            { name: "👑 월요일 8:59AM", hp: 1500, atk: 120, killMsg: "지옥의 5일이 시작된다.", unique: {type: 'weapon', name: "★ 월요일 파쇄 해머", val: 250} },
+            { name: "👑 윈도우 업데이트", hp: 1800, atk: 100, killMsg: "다시는 발표하지 마라.", unique: {type: 'glove', name: "★ 업데이트 강제 종료", val: 180} },
+            { name: "👑 명절 잔소리", hp: 1600, atk: 90, killMsg: "너 취업은 언제 하니?", unique: {type: 'hat', name: "★ 친척 차단용 이어플러그", val: 160} },
+            { name: "👑 예비군 통지서", hp: 1700, atk: 110, killMsg: "축하합니다. 동원입니다.", unique: {type: 'top', name: "★ 개구리 전투복", val: 170} },
+            { name: "👑 누진세 고지서", hp: 2000, atk: 150, killMsg: "여름은 시원했지만...", unique: {type: 'bottom', name: "★ 에어컨 전원 차단기", val: 200} },
+            { name: "👑 액정 파손", hp: 1900, atk: 130, killMsg: "바닥과의 키스.", unique: {type: 'wrist', name: "★ 방탄 강화 유리", val: 150} },
+            { name: "👑 자니? 전애인", hp: 1400, atk: 140, killMsg: "새벽 2시는 위험해.", unique: {type: 'neck', name: "★ 번호 변경 확인서", val: 140} },
+            { name: "👑 서버 점검 중", hp: 1650, atk: 80, killMsg: "점검은 늘 연장됩니다.", unique: {type: 'glove', name: "★ 점심시간 보장권", val: 130} },
+            { name: "👑 부장님 개인기", hp: 1500, atk: 95, killMsg: "안 웃으면 정색함.", unique: {type: 'top', name: "★ 리액션 자동 생성기", val: 150} },
+            { name: "👑 비상금 걸림", hp: 1800, atk: 160, killMsg: "그걸 왜 책장 뒤에...", unique: {type: 'neck', name: "★ 이중 잠금 금고", val: 210} }
         ]
     };
 
-    let player, monster;
-    const initialStats = { lv:1, atk:10, hp:100, maxHp:100, gold:0, inv:{}, book:{}, rebirthCount:0, potion:1, totalKills:0 };
+    // [2] 아이템 140종 (7부위 x 20단계)
+    const ITEM_NAMES = {
+        weapon: ["빈 물병", "잘 갈린 연필", "탕비실 티스푼", "무거운 전공서적", "말 안듣는 마우스", "법적 대응 통지서", "내용증명서", "사직서(미제출)", "팩트 폭격기", "부장님 뒷담화 캡처본", "노동청 신고버튼", "과로사 직전의 눈빛", "미친듯한 타이핑", "논리 정연한 메일", "전국민 청원서", "키보드 샷건", "금융치료 주문서", "로또 1등 당첨권", "건물주 등기권리증", "절대적 '아니오' 권한"],
+        hat: ["구멍난 비니", "다이소 귀마개", "헝클어진 머리", "투명 인간 헬멧", "사회적 가면", "뒷담화 필터 이어폰", "스트레스 완화 헤드셋", "무적의 긍정 마인드", "안들리는 척 귀마개", "현자타임용 고깔", "불면증 안대", "해탈의 서클릿", "자본주의의 미소", "강철 멘탈 투구", "포커 페이스 마스크", "영혼 가출 방지기", "심리 치료 왕관", "열반의 후드", "퇴근의 광휘", "절대적 무관심의 관"],
+        top: ["늘어난 티셔츠", "단추 떨어진 셔츠", "보풀 가디건", "땀에 절은 셔츠", "무거운 정장", "비판 방어 방탄조끼", "월급쟁이 전용 갑옷", "스트레스 흡수 코트", "사회적 체면 예복", "비난 반사 패딩", "거절의 바리케이드", "인내심의 플레이트", "강화형 야근 점퍼", "유리 멘탈 보호구", "불사조 야근복", "연봉협상 가호", "부장님 시선 차단벽", "천상의 정장", "자유의 날개 코트", "무적의 건물주 로브"],
+        bottom: ["무릎 나온 추리닝", "구겨진 슬랙스", "허리 끼는 청바지", "버티기 작업복", "무거운 발걸음 하의", "조퇴 열망 각반", "지하철 좌석 쟁탈 바지", "인내심의 타이즈", "근속연수 강화 하의", "철벽 방어 슬랙스", "강철 다리 각반", "탈출용 러닝 바지", "황금 휴가 반바지", "은하계 도피 하의", "하늘을 걷는 바지", "발차기 방어용", "성스러운 퇴근 각반", "공허의 다리 보호", "불멸의 출근 바지", "천상의 안락한 하의"],
+        glove: ["때 낀 장갑", "미끄러운 목장갑", "건조한 맨손", "지문 닳은 손", "광클 게이밍 장갑", "서류 정리 건틀릿", "속도 강화 장갑", "악수 거절용 장갑", "손가락 욕 방지기", "일머리 상승 장갑", "마법의 '전달' 장갑", "보고서 자동 완성", "신의 손가락", "심연의 마우스 패드", "번개 타이핑 손", "절대자 키보드 가드", "행정의 신 장갑", "천상의 일처리", "우주의 조율자 손", "절대자의 사인 펜"],
+        neck: ["밧줄 목걸이", "낡은 사원증", "구리 동전", "은제 클립", "행운의 클로버", "바람의 퇴근 인장", "가짜 금목걸이", "뒷담화 감지기", "민첩한 도망의 끈", "요정의 눈물", "시선 분산 목걸이", "차원 월급 봉투", "영겁의 보너스", "유령 야근 증명", "빛의 가드", "신의 축복", "공허의 법인카드", "별의 숨결", "운명의 금고 열쇠", "회식 회피의 인장"],
+        wrist: ["천 손목밴드", "낡은 가죽 팔찌", "디지털 시계", "스마트 밴드", "손목 터널 보호대", "예리한 감각 팔찌", "암살자의 시계", "그림자 보호대", "마력 스마트 워치", "드래곤 밴드", "필살의 결재 팔찌", "티타늄 워치", "영혼의 갤럭시워치", "별빛의 애플워치", "신성한 롤렉스(짝)", "공허의 파텍 필립", "신의 일격", "태양의 휴식 팔찌", "운명의 결재 라인", "심판자의 금팔찌"]
+    };
 
-    function initGame() {
-        const saved = localStorage.getItem('vh_v50_white');
-        player = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(initialStats));
-        player.isDead = false;
-        addLog("사냥 시작! 빌런 처치 시 체력 50% 회복 및 🍕 획득.");
+    // [3] 게임 로직 변수
+    let player = {
+        lv: 1, hp: 100, gold: 0, potion: 1, kills: 0, book: {},
+        base: { atk: 10, hp: 100, crit: 5, dodge: 5 },
+        equip: { weapon: null, hat: null, top: null, bottom: null, glove: null, neck: null, wrist: null }
+    };
+    let monster = null;
+
+    function init() {
         spawn();
         updateUI();
+        setInterval(battle, 1000);
     }
 
-    function addLog(msg) {
-        const logWin = document.getElementById('log-window');
-        const div = document.createElement('div');
-        div.innerHTML = `> ${msg}`;
-        logWin.prepend(div);
-        if(logWin.childNodes.length > 20) logWin.lastChild.remove();
-    }
-
+    // [4] 몬스터 스폰
     function spawn() {
-        const isRare = (Math.random() < 0.15 && player.totalKills > 15);
+        const isRare = (Math.random() < 0.15 && player.kills > 10);
         let pool = isRare ? MONSTERS.rare : MONSTERS.normal;
         let d = pool[Math.floor(Math.random() * pool.length)];
-        let growth = 1 + (player.lv * 0.09);
-        monster = { 
-            name: d.name, skill: d.skill || "킹받게 하기",
-            max: Math.floor((d.hp + (player.lv * 15)) * growth),
-            hp: Math.floor((d.hp + (player.lv * 15)) * growth),
-            atk: Math.floor((d.atk + (player.lv * 4)) * growth),
-            gold: d.gold, drop: d.drop, isBoss: isRare, killMsg: d.killMsg
+        let growth = 1 + (player.lv * 0.15);
+        
+        monster = {
+            ...d,
+            hp: Math.floor(d.hp * growth),
+            max: Math.floor(d.hp * growth),
+            atk: Math.floor(d.atk * growth),
+            isRare: isRare
         };
-        addLog(`<span class="${isRare?'color-epic':''}">[${monster.name}]</span> 출현!`);
+        addLog(`<span class="${isRare?'color-epic':''}">[${monster.name}]</span> 등장!`);
         updateUI();
     }
 
+    // [5] 능력치 계산
+    function getStats() {
+        let s = { ...player.base };
+        for(let t in player.equip) {
+            let item = player.equip[t];
+            if(!item) continue;
+            if(t === 'weapon') s.atk += item.val;
+            else if(t === 'neck') s.dodge = Math.min(50, s.dodge + (item.val/3));
+            else if(t === 'wrist') s.crit = Math.min(75, s.crit + (item.val/3));
+            else s.hp += item.val * 5;
+        }
+        return s;
+    }
+
+    // [6] 전투 시스템
     function battle() {
-        if(player.isDead) return;
-        monster.hp -= player.atk;
-        if(monster.hp > 0) {
+        if (player.hp <= 0) return;
+        let s = getStats();
+        
+        // 플레이어 공격
+        let critHit = Math.random() * 100 < s.crit;
+        let damage = s.atk * (critHit ? 2 : 1);
+        monster.hp -= damage;
+        
+        if (monster.hp <= 0) { win(); return; }
+
+        // 몬스터 공격 (회피 체크)
+        if (Math.random() * 100 < s.dodge) {
+            addLog(`💨 회피 성공!`);
+        } else {
             player.hp -= monster.atk;
-            addLog(`<span class="skill-text">「${monster.skill}」</span> -${monster.atk}HP`);
+            if (player.hp <= 0) die();
         }
-        if(player.hp <= 0) { player.hp = 0; gameOver(); }
-        else if(monster.hp <= 0) win();
         updateUI();
     }
 
+    // [7] 승리 및 드랍
     function win() {
-        player.gold += monster.gold;
-        player.totalKills++;
-        player.book[monster.name] = (player.book[monster.name] || 0) + 1;
-        const healAmt = Math.floor(player.maxHp * 0.5);
-        player.hp = Math.min(player.maxHp, player.hp + healAmt);
+        player.kills++; player.lv++; player.gold += (monster.isRare ? 1000 : 100);
+        player.book[monster.name] = true;
+        
+        let s = getStats();
+        player.hp = Math.min(s.hp, player.hp + Math.floor(s.hp * 0.5));
         player.potion++;
-        addLog(`${monster.name} 처치! <span style="color:#00ff00">+${healAmt}HP & 🍕 획득</span>`);
-        if(Math.random() < 0.45) player.inv[monster.drop] = (player.inv[monster.drop] || 0) + 1;
-        if(Object.keys(player.book).length >= 50) {
-            player.isDead = true;
-            document.getElementById('ending-ui').style.display = 'flex';
-        } else {
-            player.lv++; spawn(); save();
-        }
-    }
-
-    function gameOver() {
-        player.isDead = true;
-        document.getElementById('killer-info').innerText = `${monster.name}의 결정타!`;
-        document.getElementById('final-skill').innerText = `기술: 「${monster.skill}」`;
-        document.getElementById('death-quote').innerText = `"${monster.killMsg}"`;
-        document.getElementById('game-over').style.display = 'flex';
-    }
-
-    function revive() {
-        const g = player.gold, b = player.book, r = player.rebirthCount;
-        player = JSON.parse(JSON.stringify(initialStats));
-        player.gold = g; player.book = b; player.rebirthCount = r;
-        player.atk += (r * 150); player.maxHp += (r * 300); player.hp = player.maxHp;
-        document.getElementById('game-over').style.display = 'none';
-        spawn(); save();
-    }
-
-    function rebirth() {
-        player.rebirthCount++;
-        const b = player.book, r = player.rebirthCount;
-        player = JSON.parse(JSON.stringify(initialStats));
-        player.book = b; player.rebirthCount = r;
-        player.atk += (r * 150); player.maxHp += (r * 300); player.hp = player.maxHp;
-        document.getElementById('ending-ui').style.display = 'none';
-        spawn(); save();
-    }
-
-    function hardReset() {
-        if(confirm("모든 데이터를 초기화할까요?")) {
-            localStorage.removeItem('vh_v50_white');
-            location.reload();
-        }
-    }
-
-    function save() { localStorage.setItem('vh_v50_white', JSON.stringify(player)); }
-
-    function updateUI() {
-        document.getElementById('p-hp').innerText = Math.floor(player.hp);
-        document.getElementById('p-max').innerText = player.maxHp;
-        document.getElementById('p-hp-bar').style.width = (player.hp/player.maxHp*100) + "%";
-        document.getElementById('m-hp-bar').style.width = (monster.hp/monster.max*100) + "%";
-        document.getElementById('m-hp-text').innerText = `${Math.max(0, monster.hp)} / ${monster.max}`;
-        document.getElementById('atk-display').innerText = `ATK ${player.atk}`;
-        document.getElementById('gold').innerText = player.gold.toLocaleString();
-        document.getElementById('lv-display').innerText = player.lv;
-        document.getElementById('re-count').innerText = player.rebirthCount;
-        document.getElementById('heal-count').innerText = `(${player.potion})`;
-        document.getElementById('book-count-header').innerText = Object.keys(player.book).length;
-        const mEl = document.getElementById('m-name');
-        mEl.innerText = monster.name;
-        mEl.className = monster.isBoss ? 'color-epic' : 'color-common';
-        let invH = "";
-        for(let key in player.inv) {
-            if(player.inv[key] > 0) {
-                let cls = key === '암모니아' ? 'color-epic' : (key === '사직서' ? 'color-rare' : 'color-common');
-                invH += `<span class="${cls}">${key}(${player.inv[key]})</span> `;
+        
+        addLog(`${monster.name} 처치! HP 50% 회복 & 🍕 획득`);
+        
+        // 5% 유니크 드랍 체크
+        if (monster.unique && Math.random() < 0.05) {
+            let u = monster.unique;
+            if (!player.equip[u.type] || player.equip[u.type].val < u.val) {
+                player.equip[u.type] = { name: u.name, val: u.val, isUnique: true };
+                addLog(`<span class="unique-alert">★ 유니크 획득: [${u.name}]</span>`);
             }
+        } else {
+            dropItem();
         }
-        document.getElementById('inv').innerHTML = invH || "소재 없음";
-        document.getElementById('btn1').disabled = (player.inv['눅눅한 튀김옷'] || 0) < 3;
-        document.getElementById('btn2').disabled = (player.inv['사직서'] || 0) < 1;
-        document.getElementById('btn3').disabled = (player.inv['암모니아'] || 0) < 1;
+        spawn();
     }
 
+    // [8] 일반 아이템 드랍 (티어별)
+    function dropItem() {
+        const types = Object.keys(ITEM_NAMES);
+        const type = types[Math.floor(Math.random() * types.length)];
+        
+        let maxTier = Math.min(19, Math.floor(player.lv / 4));
+        let tier = Math.floor(Math.random() * (maxTier + 1));
+        let val = (tier + 1) * 12 + Math.floor(Math.random() * player.lv);
+        
+        let newItem = { name: ITEM_NAMES[type][tier], val: val, isUnique: false, tier: tier };
+        
+        if (!player.equip[type] || player.equip[type].val < newItem.val) {
+            player.equip[type] = newItem;
+            addLog(`장비 교체: [${newItem.name}]`);
+        }
+    }
+
+    // [9] 부가 기능
     function usePotion() {
-        if(player.potion > 0 && !player.isDead) {
+        let s = getStats();
+        if (player.potion > 0) {
             player.potion--;
-            player.hp = Math.min(player.maxHp, player.hp + Math.floor(player.maxHp * 0.8));
-            addLog("🍕 든든한 점심 식사로 멘탈을 회복했습니다!");
+            player.hp = Math.min(s.hp, player.hp + Math.floor(s.hp * 0.8));
+            addLog("🍕 든든한 점심으로 멘탈을 회복했습니다!");
             updateUI();
         }
     }
 
-    function craft(n, a, h, m, c) {
-        if((player.inv[m]||0) >= c) {
-            player.inv[m] -= c; player.atk += a; player.maxHp += h; player.hp = player.maxHp;
-            addLog(`🛠 [${n}] 강화 완료!`);
-            updateUI(); save();
+    function die() {
+        player.hp = 0;
+        document.getElementById('killer-name').innerText = monster.name;
+        document.getElementById('death-quote').innerText = `"${monster.killMsg}"`;
+        document.getElementById('game-over').style.display = 'flex';
+    }
+
+    function addLog(msg) {
+        const win = document.getElementById('log-window');
+        const d = document.createElement('div');
+        d.innerHTML = `> ${msg}`;
+        win.prepend(d);
+        if (win.childNodes.length > 12) win.lastChild.remove();
+    }
+
+    function updateUI() {
+        let s = getStats();
+        document.getElementById('p-hp').innerText = Math.floor(player.hp);
+        document.getElementById('p-max').innerText = s.hp;
+        document.getElementById('p-hp-bar').style.width = (player.hp / s.hp * 100) + "%";
+        document.getElementById('m-name').innerText = monster.name;
+        document.getElementById('m-hp-text').innerText = `${Math.max(0, monster.hp)} / ${monster.max}`;
+        document.getElementById('m-hp-bar').style.width = (monster.hp / monster.max * 100) + "%";
+        document.getElementById('stat-atk').innerText = `말빨: ${s.atk}`;
+        document.getElementById('stat-crit').innerText = `치명타: ${s.crit.toFixed(1)}%`;
+        document.getElementById('stat-dodge').innerText = `회피: ${s.dodge.toFixed(1)}%`;
+        document.getElementById('lv-display').innerText = player.lv;
+        document.getElementById('gold-display').innerText = player.gold.toLocaleString();
+        document.getElementById('heal-count').innerText = `(${player.potion})`;
+        document.getElementById('book-count').innerText = Object.keys(player.book).length;
+
+        for (let t in player.equip) {
+            const el = document.getElementById(`eq-${t}`);
+            const item = player.equip[t];
+            if (item) {
+                el.innerText = item.name;
+                if(item.isUnique) el.className = "equip-name color-unique";
+                else if(item.tier > 13) el.className = "equip-name color-epic";
+                else if(item.tier > 7) el.className = "equip-name color-rare";
+                else el.className = "equip-name";
+            }
         }
     }
 
-    window.onload = () => { initGame(); setInterval(battle, 1000); };
+    window.onload = init;
 </script>
 </body>
 </html>
