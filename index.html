@@ -6,29 +6,62 @@
     <style>
         :root { --bg: #0c0c0c; --panel: #1a1a1a; --text: #eee; --rare: #00f2ff; --unique: #bf00ff; --gold: #ffd700; --danger: #ff4444; }
         body { background: var(--bg); color: var(--text); font-family: sans-serif; display: flex; justify-content: center; padding: 20px; margin: 0; }
-        #game-container { width: 480px; background: var(--panel); border-radius: 20px; padding: 25px; border: 1px solid #333; position: relative; }
+        #game-container { width: 480px; background: var(--panel); border-radius: 20px; padding: 25px; border: 1px solid #333; position: relative; overflow: hidden; }
+        
+        /* 도감 상단 바 */
+        .book-progress-container { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 10px; border: 1px solid var(--gold); margin-bottom: 15px; }
+        .progress-bg { width: 100%; height: 6px; background: #333; border-radius: 3px; margin-top: 5px; overflow: hidden; }
+        #progress-fill { width: 0%; height: 100%; background: linear-gradient(90deg, #ff0080, var(--gold)); transition: width 0.5s; }
+
         .equip-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 15px; }
         .slot { background: #000; border: 1px solid #333; padding: 5px; border-radius: 8px; text-align: center; height: 55px; font-size: 10px; display: flex; flex-direction: column; justify-content: center; }
         .rare { border-color: var(--rare); color: var(--rare); }
         .unique { border-color: var(--unique); color: var(--unique); }
+        
         .hp-bar { width: 100%; height: 14px; background: #222; border-radius: 7px; overflow: hidden; position: relative; margin: 5px 0; }
         .hp-fill { height: 100%; transition: width 0.3s; }
-        #log-window { height: 120px; overflow-y: auto; font-size: 11px; color: #888; background: #000; padding: 10px; border-radius: 10px; margin-top: 10px; border: 1px solid #222; }
-        button { background: var(--danger); color: #fff; border: none; padding: 12px; border-radius: 8px; width: 100%; font-weight: bold; cursor: pointer; margin-top: 5px; }
-        .modal { display: none; position: absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:100; flex-direction:column; align-items:center; justify-content:center; border-radius:20px; }
+        
+        #log-window { height: 100px; overflow-y: auto; font-size: 11px; color: #888; background: #000; padding: 10px; border-radius: 10px; margin-top: 10px; border: 1px solid #222; }
+        
+        button { background: var(--danger); color: #fff; border: none; padding: 12px; border-radius: 8px; width: 100%; font-weight: bold; cursor: pointer; }
+        .btn-book { background: none; border: 1px solid #444; color: #888; padding: 5px; font-size: 11px; margin-top: 10px; }
+
+        /* 모달 스타일 */
+        .modal { display: none; position: absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:100; flex-direction:column; align-items:center; padding:20px; box-sizing: border-box; }
+        .book-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px; width: 100%; overflow-y: auto; margin: 15px 0; }
+        .book-item { padding: 5px; background: #222; border-radius: 4px; font-size: 10px; border: 1px solid #333; color: #444; text-align: center; }
+        .book-item.unlocked { color: #fff; border-color: var(--unique); }
     </style>
 </head>
 <body>
+
 <div id="game-container">
-    <div id="game-over" class="modal">
+    <div id="game-over" class="modal" style="justify-content: center;">
         <h1 style="color:var(--danger);">MENTAL BREAK</h1>
-        <p id="death-reason" style="padding:20px;"></p>
-        <button onclick="location.reload()" style="width:200px;">재도전</button>
+        <p id="death-reason" style="text-align: center; color: #bbb;"></p>
+        <button onclick="location.reload()" style="width: 200px;">재입사하기</button>
     </div>
-    <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-        <div><div id="stage-text" style="color:var(--rare); font-size:12px;">STAGE 1</div><div style="font-size:20px; font-weight:900; color:var(--gold);">COLLECT <span id="col-count">0</span>/50</div></div>
-        <div style="text-align:right;">Lv.<span id="p-lv">1</span><br><span id="p-atk-text" style="font-size:10px;">ATK: 10</span></div>
+
+    <div id="book-modal" class="modal">
+        <h2 style="color:var(--gold); margin: 10px 0;">빌런 도감</h2>
+        <div class="book-grid" id="book-grid">
+            </div>
+        <button onclick="toggleBook()" style="background:#444;">닫기</button>
     </div>
+
+    <div class="book-progress-container">
+        <div style="display:flex; justify-content:space-between; align-items:flex-end;">
+            <span id="stage-text" style="color:var(--rare); font-size:12px; font-weight:bold;">STAGE 1</span>
+            <span style="font-size:16px; font-weight:900; color:var(--gold);">COLLECT <span id="col-count">0</span>/50</span>
+        </div>
+        <div class="progress-bg"><div id="progress-fill"></div></div>
+    </div>
+
+    <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:12px;">
+        <span>Lv.<span id="p-lv">1</span> (ATK: <span id="p-atk-text">10</span>)</span>
+        <span id="p-hp-text">100/100</span>
+    </div>
+
     <div class="equip-grid" id="equip-ui">
         <div class="slot" id="slot-weapon"><span>무기</span><div class="name">-</div></div>
         <div class="slot" id="slot-hat"><span>모자</span><div class="name">-</div></div>
@@ -39,78 +72,125 @@
         <div class="slot" id="slot-wrist"><span>손목</span><div class="name">-</div></div>
         <div class="slot" style="border-color:var(--gold);"><span>피자</span><div id="pot-count">2</div></div>
     </div>
+
     <div style="background:#000; padding:15px; border-radius:15px; border:1px solid #333; margin-bottom:10px; text-align:center;">
-        <div id="m-name" style="font-weight:bold;">빌런 출현 대기...</div>
-        <div id="m-skill" style="color:var(--danger); font-size:11px;">-</div>
+        <div id="m-name" style="font-weight:bold; font-size:16px;">빌런 찾는 중...</div>
+        <div id="m-skill" style="color:var(--danger); font-size:11px; margin-bottom:5px;">-</div>
         <div class="hp-bar"><div id="m-hp-fill" class="hp-fill" style="background:var(--danger); width:100%;"></div></div>
     </div>
-    <div style="padding:10px; background:rgba(255,255,255,0.02); border-radius:10px;">
-        <div style="display:flex; justify-content:space-between; font-size:11px;"><span>내 멘탈</span><span id="p-hp-text">100/100</span></div>
-        <div class="hp-bar"><div id="p-hp-fill" class="hp-fill" style="background:#fff; width:100%;"></div></div>
-        <button onclick="usePotion()">🍕 피자 먹기</button>
-    </div>
+
+    <div class="hp-bar" style="background:#333;"><div id="p-hp-fill" class="hp-fill" style="background:#fff; width:100%;"></div></div>
+    <button onclick="usePotion()">🍕 피자 먹기 (멘탈 회복)</button>
+
     <div id="log-window"></div>
+    <button class="btn-book" onclick="toggleBook()">📊 상세 도감 열기</button>
 </div>
+
 <script src="villains.js"></script>
 <script src="items.js"></script>
 <script>
-    let p = { lv:1, hp:100, atk:10, pot:2, stage:0, book:{}, eq:{} };
+    let p = { lv:1, hp:100, atk:10, pot:2, stage:0, book:{}, eq:{}, isBookOpen: false };
     let m = null;
-    const init = () => { spawn(); setInterval(tick, 1000); updateUI(); };
+
+    const init = () => {
+        initBookUI();
+        spawn();
+        setInterval(tick, 1000);
+        updateUI();
+    };
+
+    const initBookUI = () => {
+        const grid = document.getElementById('book-grid');
+        grid.innerHTML = "";
+        VILLAINS_DATA.forEach((group, gIdx) => {
+            group.forEach(v => {
+                const div = document.createElement('div');
+                div.className = "book-item";
+                div.id = `book-${v.name}`;
+                div.innerText = `[G${gIdx+1}] ???`;
+                grid.appendChild(div);
+            });
+        });
+    };
+
+    const toggleBook = () => {
+        p.isBookOpen = !p.isBookOpen;
+        document.getElementById('book-modal').style.display = p.isBookOpen ? 'flex' : 'none';
+    };
+
     const getAtk = () => p.atk + Object.values(p.eq).reduce((a,b)=> (b.slot==='weapon'||b.slot==='glove')?a+b.val:a, 0);
     const getMaxHP = () => 100 + (p.lv*10) + Object.values(p.eq).reduce((a,b)=> (['top','bottom','hat','wrist'].includes(b.slot))?a+b.val:a, 0);
+
     const spawn = () => {
         const raw = VILLAINS_DATA[p.stage][Math.floor(Math.random()*10)];
         const g = 1+(p.lv*0.15);
         m = { ...raw, curHp: Math.floor(raw.hp*g), maxHp: Math.floor(raw.hp*g), curAtk: Math.floor(raw.atk*g) };
         updateUI();
     };
+
     const tick = () => {
-        if(p.hp <= 0) return;
+        if(p.hp <= 0 || p.isBookOpen) return;
         m.curHp -= getAtk();
         if(m.curHp <= 0) { win(); return; }
         p.hp -= m.curAtk;
-        addLog(`💢 ${m.name}: -${m.curAtk}`);
+        addLog(`💢 ${m.name}: -${m.curAtk} 피해`);
         if(p.hp <= 0) { 
             document.getElementById('death-reason').innerText = `${m.name}: "${m.killMsg}"`;
             document.getElementById('game-over').style.display = 'flex'; 
         }
         updateUI();
     };
+
     const win = () => {
-        addLog(`✨ ${m.name} 극복!`);
-        p.book[m.name] = true; p.lv++; p.atk += 2;
+        addLog(`<span style="color:var(--rare)">✨ ${m.name} 극복!</span>`);
+        p.book[m.name] = true; 
+        p.lv++; p.atk += 2;
+        
+        // 도감 UI 업데이트
+        const bookEl = document.getElementById(`book-${m.name}`);
+        if(bookEl) { bookEl.innerText = m.name; bookEl.classList.add('unlocked'); }
+
         const drop = ITEM_SYSTEM.generateDrop(m, p.stage);
         if(drop && (!p.eq[drop.slot] || p.eq[drop.slot].val < drop.val)) {
             p.eq[drop.slot] = drop;
-            addLog(`🎁 [${drop.grade.toUpperCase()}] ${drop.name} 장착!`);
+            let color = drop.grade === 'unique' ? 'var(--unique)' : (drop.grade === 'rare' ? 'var(--rare)' : '#fff');
+            addLog(`<span style="color:${color}">🎁 [${drop.grade.toUpperCase()}] ${drop.name} 장착!</span>`);
         }
         if(Math.random()<0.5) p.pot++;
         if(VILLAINS_DATA[p.stage].every(v=>p.book[v.name]) && p.stage < 4) p.stage++;
         spawn();
     };
+
     const usePotion = () => {
         if(p.pot<=0) return;
         p.pot--; p.hp = Math.min(getMaxHP(), p.hp + Math.floor(getMaxHP()*0.5));
-        addLog(`🍕 피자 회복!`); updateUI();
+        addLog(`🍕 피자 회복 완료!`); updateUI();
     };
+
     const addLog = (msg) => {
         const log = document.getElementById('log-window');
         const d = document.createElement('div'); d.innerHTML = msg;
         log.insertBefore(d, log.firstChild);
-        if(log.childNodes.length > 20) log.lastChild.remove();
+        if(log.childNodes.length > 15) log.lastChild.remove();
     };
+
     const updateUI = () => {
         const max = getMaxHP();
+        const collected = Object.keys(p.book).length;
         document.getElementById('p-lv').innerText = p.lv;
-        document.getElementById('p-atk-text').innerText = `ATK: ${getAtk()}`;
+        document.getElementById('p-atk-text').innerText = getAtk();
         document.getElementById('p-hp-text').innerText = `${Math.max(0,p.hp)}/${max}`;
         document.getElementById('p-hp-fill').style.width = (p.hp/max*100) + "%";
         document.getElementById('m-name').innerText = m.name;
         document.getElementById('m-skill').innerText = `기술: ${m.skill}`;
         document.getElementById('m-hp-fill').style.width = (m.curHp/m.maxHp*100) + "%";
-        document.getElementById('col-count').innerText = Object.keys(p.book).length;
+        document.getElementById('col-count').innerText = collected;
+        document.getElementById('progress-fill').style.width = (collected/50*100) + "%";
         document.getElementById('pot-count').innerText = p.pot;
+        
+        const stageNames = ["일상의 시련", "사회의 쓴맛", "사내 정치", "현실의 벽", "사회적 멸망"];
+        document.getElementById('stage-text').innerText = `STAGE ${p.stage + 1}: ${stageNames[p.stage]}`;
+
         ITEM_SYSTEM.slots.forEach(s => {
             const el = document.getElementById(`slot-${s}`);
             if(p.eq[s]) { el.querySelector('.name').innerText = p.eq[s].name; el.className = `slot ${p.eq[s].grade}`; }
