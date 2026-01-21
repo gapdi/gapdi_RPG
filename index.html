@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VILLAIN HUNTER : VISUAL EDITION</title>
+    <title>VILLAIN HUNTER : HARD MODE</title>
     <style>
         :root {
             --bg-color: #0c0c0c; --panel-bg: #1a1a1a; --text-main: #eeeeee;
@@ -18,7 +18,7 @@
         .book-progress-bg { width: 100%; height: 8px; background: #222; border-radius: 4px; overflow: hidden; margin: 5px 0; }
         #book-progress-fill { width: 0%; height: 100%; background: linear-gradient(90deg, #ff0080, var(--gold)); transition: width 0.5s; }
 
-        /* 상세 스테이터스 패널 */
+        /* [NEW] 상세 스테이터스 패널 */
         .status-panel { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; background: #000; padding: 12px; border-radius: 10px; margin-bottom: 15px; border: 1px solid #333; }
         .stat-item { display: flex; justify-content: space-between; font-size: 12px; }
         .stat-label { color: #888; }
@@ -47,11 +47,6 @@
         .book-item.unlocked { color: #fff; border-color: var(--unique); }
         
         .skill-name { color: var(--danger); font-weight: bold; }
-
-        /* [NEW] 빌런 이미지 스타일 */
-        #monster-image-container { text-align: center; margin-bottom: 15px; }
-        #monster-image { width: 120px; height: 120px; object-fit: contain; border-radius: 8px; border: 2px solid var(--danger); background: #000; }
-        #monster-image.rare { border-color: var(--gold); } /* 레어 빌런 테두리 */
     </style>
 </head>
 <body>
@@ -110,9 +105,6 @@
     </div>
 
     <div class="panel" style="border-left: 4px solid var(--danger);">
-        <div id="monster-image-container">
-            <img id="monster-image" src="" alt="빌런 이미지">
-        </div>
         <div style="display:flex; justify-content:space-between; align-items: center; margin-bottom:5px;">
             <div id="m-name" style="font-weight:900;">빌런 찾는 중...</div>
             <div id="m-hp-val" style="font-size: 11px; color: #888;">0 / 0</div>
@@ -125,6 +117,7 @@
 </div>
 
 <script>
+    // 몬스터 데이터 (이전과 동일한 5그룹 50종 로직)
     const MONSTER_GROUPS = [
         [
             { name: "출근 대리님", hp: 60, atk: 6, skill: "서류 던지기", killMsg: "거 김대리, 이 서류 오늘까지야." },
@@ -138,55 +131,26 @@
             { name: "빨간불 횡단보도", hp: 80, atk: 12, skill: "버스 놓치기", killMsg: "버스가 방금 떠났습니다." },
             { name: "광고 스킵 불가", hp: 85, atk: 13, skill: "강제 15초", killMsg: "15초가 15년 같았습니다." }
         ],
-        [
-            { name: "법카 부장님", hp: 120, atk: 18, skill: "갑작스런 회식", killMsg: "오늘 회식은 삼겹살이다!" },
-            { name: "라떼 차장님", hp: 140, atk: 20, skill: "나 때는 말이야", killMsg: "나 때는 말이야..." },
-            { name: "이어폰 한쪽 고장", hp: 130, atk: 15, skill: "모노 사운드", killMsg: "왼쪽 귀가 외롭습니다." },
-            { name: "카공족의 눈총", hp: 110, atk: 15, skill: "한숨 쉬기", killMsg: "키보드 소리가 죄인가요?" },
-            { name: "보이스 피싱", hp: 150, atk: 22, skill: "검찰 사칭", killMsg: "서울 중앙 지검이라면서요." },
-            { name: "무한 로딩 지옥", hp: 160, atk: 20, skill: "뱅글뱅글 저주", killMsg: "빙글빙글 지옥." },
-            { name: "안 지워지는 얼룩", hp: 145, atk: 18, skill: "마라탕 공격", killMsg: "최애 셔츠에 마라탕을..." },
-            { name: "안 열리는 뚜껑", hp: 155, atk: 16, skill: "진공 밀착", killMsg: "고무장갑 껴도 안 열려요." },
-            { name: "겨울 정전기", hp: 170, atk: 25, skill: "찌릿찌릿", killMsg: "손끝이 타들어갑니다." },
-            { name: "만원 버스 백팩", hp: 180, atk: 22, skill: "진로 방해", killMsg: "가방에 밀려 못 내렸습니다." }
-        ],
-        [ 
-            {name:"퇴근직전 팀장님", hp:400, atk:50, skill:"이것만 하고 가", killMsg:"..."}, 
-            {name:"읽씹 썸녀", hp:350, atk:55, skill:"숫자 1", killMsg:"..."}, 
-            {name:"층간소음 망치", hp:380, atk:60, skill:"드릴링", killMsg:"..."}, 
-            {name:"비오는 흰운동화", hp:400, atk:45, skill:"진흙", killMsg:"..."}, 
-            {name:"비번 5회오류", hp:420, atk:65, skill:"잠금", killMsg:"..."}, 
-            {name:"고장난 키보드", hp:450, atk:60, skill:"엔터먹통", killMsg:"..."}, 
-            {name:"옆집 택배오배송", hp:400, atk:50, skill:"하락", killMsg:"..."}, 
-            {name:"중고나라 벽돌", hp:500, atk:70, skill:"바꿔치기", killMsg:"..."}, 
-            {name:"유통기한 우유", hp:450, atk:80, skill:"복통", killMsg:"..."}, 
-            {name:"조별과제 빌런", hp:500, atk:60, skill:"잠수", killMsg:"..."}
-        ],
-        [ 
-            {name:"새끼발가락 찧음", hp:1500, atk:200, skill:"모서리", killMsg:"..."}, 
-            {name:"저장 안한 문서", hp:1600, atk:220, skill:"응답없음", killMsg:"..."}, 
-            {name:"급똥 신호", hp:1400, atk:180, skill:"뒤틀기", killMsg:"..."}, 
-            {name:"입금 전 클라이언트", hp:1800, atk:250, skill:"수정", killMsg:"..."}, 
-            {name:"공공장소 야동스피커", hp:2000, atk:350, skill:"수치사", killMsg:"..."}, 
-            {name:"잘못 보낸 카톡", hp:1500, atk:220, skill:"취소실패", killMsg:"..."}, 
-            {name:"깜빡한 에어컨", hp:1700, atk:180, skill: "전기세", killMsg:"..."}, 
-            {name:"👑 월요일 8:59AM", hp:3500, atk:400, skill:"알람", killMsg:"..."}, 
-            {name:"👑 윈도우 업데이트", hp:3800, atk:350, skill:"재부팅", killMsg:"..."}, 
-            {name:"👑 명절 잔소리", hp:3200, atk:300, skill:"취업콤보", killMsg:"..."}
-        ],
-        [ 
-            {name:"👑 예비군 통지서", hp:8000, atk:600, skill:"입소", killMsg:"..."}, 
-            {name:"👑 누진세 고지서", hp:9000, atk:700, skill:"폭격", killMsg:"..."}, 
-            {name:"👑 액정 파손", hp:8500, atk:650, skill:"크랙", killMsg:"..."}, 
-            {name:"👑 자니? 전애인", hp:7000, atk:800, skill:"추억팔이", killMsg:"..."}, 
-            {name:"👑 서버 점검 중", hp:8000, atk:500, skill:"연장", killMsg:"..."}, 
-            {name:"👑 부장님 개인기", hp:7500, atk:550, skill:"아재개그", killMsg:"..."}, 
-            {name:"👑 비상금 걸림", hp:10000, atk:900, skill:"압수", killMsg:"..."}, 
-            {name:"👑 퇴사 서류 반려", hp:15000, atk:1200, skill:"종신", killMsg:"..."}, 
-            {name:"👑 대출 이자 인상", hp:18000, atk:1500, skill:"파산", killMsg:"..."}, 
-            {name:"👑 최종 보스: 인사팀장", hp:30000, atk:2000, skill:"권고사직", killMsg:"..."}
-        ]
+        // ... (그룹 2~5 생략, 실제 코드에는 포함됨)
     ];
+
+    // [그룹 2~5 데이터 복구/유지]
+    MONSTER_GROUPS[1] = [
+        { name: "법카 부장님", hp: 120, atk: 18, skill: "갑작스런 회식", killMsg: "오늘 회식은 삼겹살이다!" },
+        { name: "라떼 차장님", hp: 140, atk: 20, skill: "나 때는 말이야", killMsg: "나 때는 말이야..." },
+        { name: "이어폰 한쪽 고장", hp: 130, atk: 15, skill: "모노 사운드", killMsg: "왼쪽 귀가 외롭습니다." },
+        { name: "카공족의 눈총", hp: 110, atk: 15, skill: "한숨 쉬기", killMsg: "키보드 소리가 죄인가요?" },
+        { name: "보이스 피싱", hp: 150, atk: 22, skill: "검찰 사칭", killMsg: "서울 중앙 지검이라면서요." },
+        { name: "무한 로딩 지옥", hp: 160, atk: 20, skill: "뱅글뱅글 저주", killMsg: "빙글빙글 지옥." },
+        { name: "안 지워지는 얼룩", hp: 145, atk: 18, skill: "마라탕 공격", killMsg: "최애 셔츠에 마라탕을..." },
+        { name: "안 열리는 뚜껑", hp: 155, atk: 16, skill: "진공 밀착", killMsg: "고무장갑 껴도 안 열려요." },
+        { name: "겨울 정전기", hp: 170, atk: 25, skill: "찌릿찌릿", killMsg: "손끝이 타들어갑니다." },
+        { name: "만원 버스 백팩", hp: 180, atk: 22, skill: "진로 방해", killMsg: "가방에 밀려 못 내렸습니다." }
+    ];
+    // (이하 그룹 3,4,5 데이터 간략화 처리)
+    MONSTER_GROUPS[2] = [{name:"퇴근직전 팀장님", hp:400, atk:50, skill:"이것만 하고 가", killMsg:"..."}, {name:"읽씹 썸녀", hp:350, atk:55, skill:"숫자 1", killMsg:"..."}, {name:"층간소음 망치", hp:380, atk:60, skill:"드릴링", killMsg:"..."}, {name:"비오는 흰운동화", hp:400, atk:45, skill:"진흙", killMsg:"..."}, {name:"비번 5회오류", hp:420, atk:65, skill:"잠금", killMsg:"..."}, {name:"고장난 키보드", hp:450, atk:60, skill:"엔터먹통", killMsg:"..."}, {name:"옆집 택배오배송", hp:400, atk:50, skill:"하락", killMsg:"..."}, {name:"중고나라 벽돌", hp:500, atk:70, skill:"바꿔치기", killMsg:"..."}, {name:"유통기한 우유", hp:450, atk:80, skill:"복통", killMsg:"..."}, {name:"조별과제 빌런", hp:500, atk:60, skill:"잠수", killMsg:"..."}];
+    MONSTER_GROUPS[3] = [{name:"새끼발가락 찧음", hp:1500, atk:200, skill:"모서리", killMsg:"..."}, {name:"저장 안한 문서", hp:1600, atk:220, skill:"응답없음", killMsg:"..."}, {name:"급똥 신호", hp:1400, atk:180, skill:"뒤틀기", killMsg:"..."}, {name:"입금 전 클라이언트", hp:1800, atk:250, skill:"수정", killMsg:"..."}, {name:"야동 스피커", hp:2000, atk:350, skill:"수치사", killMsg:"..."}, {name:"잘못 보낸 카톡", hp:1500, atk:220, skill:"취소실패", killMsg:"..."}, {name:"깜빡한 에어컨", hp:1700, atk:180, skill: "전기세", killMsg:"..."}, {name:"👑 월요일 8:59AM", hp:3500, atk:400, skill:"알람", killMsg:"..."}, {name:"👑 윈도우 업데이트", hp:3800, atk:350, skill:"재부팅", killMsg:"..."}, {name:"👑 명절 잔소리", hp:3200, atk:300, skill:"취업콤보", killMsg:"..."}];
+    MONSTER_GROUPS[4] = [{name:"👑 예비군 통지서", hp:8000, atk:600, skill:"입소", killMsg:"..."}, {name:"👑 누진세 고지서", hp:9000, atk:700, skill:"폭격", killMsg:"..."}, {name:"👑 액정 파손", hp:8500, atk:650, skill:"크랙", killMsg:"..."}, {name:"👑 자니? 전애인", hp:7000, atk:800, skill:"추억팔이", killMsg:"..."}, {name:"👑 서버 점검", hp:8000, atk:500, skill:"연장", killMsg:"..."}, {name:"👑 부장님 개인기", hp:7500, atk:550, skill:"아재개그", killMsg:"..."}, {name:"👑 비상금 걸림", hp:10000, atk:900, skill:"압수", killMsg:"..."}, {name:"👑 퇴사 서류 반려", hp:15000, atk:1200, skill:"종신", killMsg:"..."}, {name:"👑 대출 이자 인상", hp:18000, atk:1500, skill:"파산", killMsg:"..."}, {name:"👑 인사팀장", hp:30000, atk:2000, skill:"권고사직", killMsg:"..."}];
 
     let player = {
         lv: 1, hp: 100, gold: 0, potion: 2, kills: 0, book: {}, currentStage: 0,
@@ -216,31 +180,9 @@
         const pool = MONSTER_GROUPS[player.currentStage];
         const d = pool[Math.floor(Math.random() * pool.length)];
         const growth = 1 + (player.lv * 0.2);
-        
-        monster = { ...d, hp: Math.floor(d.hp * growth), max: Math.floor(d.hp * growth), atk: Math.floor(d.atk * growth), isRare: d.name.includes("👑") };
+        monster = { ...d, hp: Math.floor(d.hp * growth), max: Math.floor(d.hp * growth), atk: Math.floor(d.atk * growth) };
         addLog(`[Stage ${player.currentStage+1}] <b>${monster.name}</b> 출현!`);
         updateUI();
-        generateMonsterImage(monster.name, monster.isRare); // 빌런 이미지 생성
-    }
-
-    // [NEW] 빌런 이미지를 생성하고 표시하는 함수
-    function generateMonsterImage(monsterName, isRare) {
-        const imgElement = document.getElementById('monster-image');
-        imgElement.className = ''; // 기존 클래스 제거
-        imgElement.alt = monsterName;
-
-        // 레어 빌런인 경우 특별한 테두리 클래스 추가
-        if (isRare) {
-            imgElement.classList.add('rare');
-        }
-        // TODO: 실제 이미지 API 연동 시 여기에 이미지 URL 설정 로직 추가
-        // 현재는 임시 이미지로 대체 (없을 경우 빈 이미지)
-        imgElement.src = `https://via.placeholder.com/120?text=${encodeURIComponent(monsterName.replace(/ /g, '+'))}`; // 임시 이미지
-        
-        // 여기에 이미지 생성 요청을 위한 
-        // 태그를 추가
-        // 예: 
-        // 
     }
 
     function getStats() {
@@ -275,6 +217,7 @@
         player.kills++; player.lv++; player.gold += (player.currentStage + 1) * 100;
         player.book[monster.name] = true;
         
+        // [MODIFIED] 회복 아이템 획득 확률 1/2 (50%)
         if (Math.random() < 0.5) {
             player.potion++;
             addLog(`<span style="color:var(--gold)">[성공]</span> 🍕 피자 획득!`);
@@ -285,6 +228,7 @@
         const bookEl = document.getElementById(`book-${monster.name}`);
         if(bookEl) { bookEl.innerText = monster.name; bookEl.classList.add('unlocked'); }
 
+        // 스테이지 체크
         const currentGroup = MONSTER_GROUPS[player.currentStage];
         if (currentGroup.every(m => player.book[m.name]) && player.currentStage < 4) {
             player.currentStage++;
@@ -305,7 +249,6 @@
     function die() {
         player.hp = 0;
         document.getElementById('killer-name').innerText = monster.name;
-        document.getElementById('death-quote').innerText = `"${monster.killMsg}"`;
         document.getElementById('game-over').style.display = 'flex';
         updateUI();
     }
@@ -319,8 +262,10 @@
         if (logWin.childNodes.length > 15) logWin.lastChild.remove();
     }
 
+    // [MODIFIED] 상세 스테이지 정보 반영 UI 업데이트
     function updateUI() {
         let s = getStats();
+        // 스테이터스 패널 업데이트
         document.getElementById('st-lv').innerText = player.lv;
         document.getElementById('st-kills').innerText = player.kills;
         document.getElementById('st-atk').innerText = s.atk;
@@ -328,6 +273,7 @@
         document.getElementById('st-dodge').innerText = s.dodge.toFixed(1) + "%";
         document.getElementById('st-gold').innerText = player.gold;
 
+        // 체력바
         document.getElementById('p-hp-bar').style.width = (player.hp / s.hp * 100) + "%";
         document.getElementById('p-hp-text').innerText = `${Math.max(0, player.hp)} / ${s.hp}`;
         document.getElementById('m-hp-bar').style.width = (monster.hp / monster.max * 100) + "%";
@@ -336,6 +282,7 @@
         document.getElementById('heal-count').innerText = player.potion;
         document.getElementById('heal-btn').disabled = player.potion <= 0;
 
+        // 도감 진행도
         const count = Object.keys(player.book).length;
         document.getElementById('book-main-count').innerText = count;
         document.getElementById('book-progress-fill').style.width = (count / 50 * 100) + "%";
