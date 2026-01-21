@@ -2,88 +2,118 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>VILLAIN HUNTER : ULTIMATE</title>
+    <title>VILLAIN HUNTER : NOIR</title>
     <style>
-        :root { --bg: #0c0c0c; --panel: #1a1a1a; --text: #eee; --rare: #00f2ff; --unique: #bf00ff; --gold: #ffd700; --danger: #ff4444; }
-        body { background: var(--bg); color: var(--text); font-family: sans-serif; display: flex; justify-content: center; padding: 20px; margin: 0; }
-        #game-container { width: 480px; background: var(--panel); border-radius: 20px; padding: 25px; border: 1px solid #333; position: relative; overflow: hidden; }
-        
-        /* 도감 상단 바 */
-        .book-progress-container { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 10px; border: 1px solid var(--gold); margin-bottom: 15px; }
-        .progress-bg { width: 100%; height: 6px; background: #333; border-radius: 3px; margin-top: 5px; overflow: hidden; }
-        #progress-fill { width: 0%; height: 100%; background: linear-gradient(90deg, #ff0080, var(--gold)); transition: width 0.5s; }
+        :root {
+            --bg: #000000;
+            --surface: #111111;
+            --border: #333333;
+            --text-main: #ffffff;
+            --text-sub: #666666;
+            --rare-color: #bbbbbb; /* 레어: 밝은 회색 + 밑줄 */
+            --unique-color: #ffffff; /* 유니크: 순백색 + 굵게 */
+        }
 
-        .equip-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 15px; }
-        .slot { background: #000; border: 1px solid #333; padding: 5px; border-radius: 8px; text-align: center; height: 55px; font-size: 10px; display: flex; flex-direction: column; justify-content: center; }
-        .rare { border-color: var(--rare); color: var(--rare); }
-        .unique { border-color: var(--unique); color: var(--unique); }
-        
-        .hp-bar { width: 100%; height: 14px; background: #222; border-radius: 7px; overflow: hidden; position: relative; margin: 5px 0; }
-        .hp-fill { height: 100%; transition: width 0.3s; }
-        
-        #log-window { height: 100px; overflow-y: auto; font-size: 11px; color: #888; background: #000; padding: 10px; border-radius: 10px; margin-top: 10px; border: 1px solid #222; }
-        
-        button { background: var(--danger); color: #fff; border: none; padding: 12px; border-radius: 8px; width: 100%; font-weight: bold; cursor: pointer; }
-        .btn-book { background: none; border: 1px solid #444; color: #888; padding: 5px; font-size: 11px; margin-top: 10px; }
+        body { 
+            background: var(--bg); color: var(--text-main); 
+            font-family: 'Inter', sans-serif; 
+            display: flex; justify-content: center; padding: 40px 20px; margin: 0; 
+        }
 
-        /* 모달 스타일 */
-        .modal { display: none; position: absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:100; flex-direction:column; align-items:center; padding:20px; box-sizing: border-box; }
-        .book-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px; width: 100%; overflow-y: auto; margin: 15px 0; }
-        .book-item { padding: 5px; background: #222; border-radius: 4px; font-size: 10px; border: 1px solid #333; color: #444; text-align: center; }
-        .book-item.unlocked { color: #fff; border-color: var(--unique); }
+        #game-container { width: 440px; background: var(--surface); border: 1px solid var(--border); padding: 30px; position: relative; }
+
+        header { border-bottom: 1px solid var(--border); padding-bottom: 20px; margin-bottom: 20px; }
+        .status-row { display: flex; justify-content: space-between; align-items: baseline; }
+        .stage-title { font-size: 11px; text-transform: uppercase; color: var(--text-sub); letter-spacing: 2px; }
+        .collection-count { font-size: 24px; font-weight: 200; }
+
+        .progress-bar { width: 100%; height: 1px; background: #222; margin-top: 10px; }
+        #progress-fill { height: 100%; background: #fff; width: 0%; transition: width 0.4s; }
+
+        /* 장비 슬롯 등급별 스타일 */
+        .equip-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); margin: 20px 0; }
+        .slot { background: var(--surface); height: 60px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 5px; }
+        .slot span { font-size: 9px; color: var(--text-sub); margin-bottom: 4px; }
+        .slot .name { font-size: 10px; text-align: center; color: var(--text-sub); transition: 0.3s; }
+
+        /* 등급별 텍스트 스타일 */
+        .grade-common { color: #666 !important; }
+        .grade-rare { color: #eee !important; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+        .grade-unique { color: #ffffff !important; font-weight: 900; text-shadow: 0 0 8px rgba(255,255,255,0.5); }
+
+        .target-card { border: 1px solid var(--border); padding: 40px 20px; text-align: center; margin-bottom: 20px; transition: 0.3s; }
+        #m-name { font-size: 22px; font-weight: 600; margin-bottom: 8px; letter-spacing: -1px; }
+        #m-skill { font-size: 12px; color: var(--text-sub); }
+        
+        /* 보스 등장 시 카드 강조 */
+        .boss-active { border: 1px solid #fff !important; background: #1a1a1a; }
+
+        .hp-bar-minimal { width: 100%; height: 2px; background: #222; position: relative; margin-top: 15px; }
+        .hp-fill { height: 100%; background: #fff; transition: width 0.3s; }
+
+        .player-info { margin-bottom: 8px; font-size: 11px; color: var(--text-sub); display: flex; justify-content: space-between; text-transform: uppercase; }
+        .btn-action { background: #fff; color: #000; border: none; padding: 16px; width: 100%; font-weight: 800; cursor: pointer; font-size: 13px; }
+        
+        #log-window { height: 80px; overflow-y: auto; font-size: 11px; color: var(--text-sub); margin-top: 20px; border-top: 1px solid var(--border); padding-top: 10px; line-height: 1.6; }
+
+        .modal { display: none; position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.98); z-index:100; flex-direction:column; padding:40px; box-sizing: border-box; }
+        .book-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; overflow-y: auto; margin: 20px 0; }
+        .book-item { font-size: 11px; color: #333; border-bottom: 1px solid #111; padding-bottom: 5px; }
+        .book-item.unlocked { color: #fff; }
     </style>
 </head>
 <body>
 
 <div id="game-container">
-    <div id="game-over" class="modal" style="justify-content: center;">
-        <h1 style="color:var(--danger);">MENTAL BREAK</h1>
-        <p id="death-reason" style="text-align: center; color: #bbb;"></p>
-        <button onclick="location.reload()" style="width: 200px;">재입사하기</button>
-    </div>
-
     <div id="book-modal" class="modal">
-        <h2 style="color:var(--gold); margin: 10px 0;">빌런 도감</h2>
-        <div class="book-grid" id="book-grid">
-            </div>
-        <button onclick="toggleBook()" style="background:#444;">닫기</button>
+        <div style="font-size: 24px; font-weight: 200; margin-bottom: 10px;">ARCHIVE</div>
+        <div class="book-grid" id="book-grid"></div>
+        <button onclick="toggleBook()" style="background:none; border:1px solid #333; color:#888; padding:10px; cursor:pointer;">CLOSE</button>
     </div>
 
-    <div class="book-progress-container">
-        <div style="display:flex; justify-content:space-between; align-items:flex-end;">
-            <span id="stage-text" style="color:var(--rare); font-size:12px; font-weight:bold;">STAGE 1</span>
-            <span style="font-size:16px; font-weight:900; color:var(--gold);">COLLECT <span id="col-count">0</span>/50</span>
+    <div id="game-over" class="modal" style="justify-content: center; text-align: center;">
+        <div style="font-size: 32px; font-weight: 800; margin-bottom: 10px;">LOST</div>
+        <p id="death-reason" style="color: var(--text-sub); font-size: 13px; margin-bottom: 30px; line-height: 1.5;"></p>
+        <button class="btn-action" onclick="location.reload()">RETRY</button>
+    </div>
+
+    <header>
+        <div class="status-row">
+            <div id="stage-text" class="stage-title">STAGE 01</div>
+            <div class="collection-count"><span id="col-count">0</span><span style="font-size:14px; color:#444;">/50</span></div>
         </div>
-        <div class="progress-bg"><div id="progress-fill"></div></div>
+        <div class="progress-bar"><div id="progress-fill"></div></div>
+    </header>
+
+    <div id="m-card" class="target-card">
+        <div id="m-name">SEARCHING...</div>
+        <div id="m-skill">-</div>
+        <div class="hp-bar-minimal"><div id="m-hp-fill" class="hp-fill"></div></div>
     </div>
 
-    <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:12px;">
-        <span>Lv.<span id="p-lv">1</span> (ATK: <span id="p-atk-text">10</span>)</span>
-        <span id="p-hp-text">100/100</span>
+    <div class="player-section">
+        <div class="player-info">
+            <span>LV.<span id="p-lv">1</span> / ATK <span id="p-atk-text">10</span></span>
+            <span id="p-hp-text">100 / 100</span>
+        </div>
+        <div class="hp-bar-minimal" style="margin-bottom: 20px; height: 4px; background: #111;">
+            <div id="p-hp-fill" class="hp-fill"></div>
+        </div>
+        <button class="btn-action" onclick="usePotion()">RESTORE MENTAL (<span id="pot-count">2</span>)</button>
     </div>
 
-    <div class="equip-grid" id="equip-ui">
-        <div class="slot" id="slot-weapon"><span>무기</span><div class="name">-</div></div>
-        <div class="slot" id="slot-hat"><span>모자</span><div class="name">-</div></div>
-        <div class="slot" id="slot-top"><span>상의</span><div class="name">-</div></div>
-        <div class="slot" id="slot-bottom"><span>하의</span><div class="name">-</div></div>
-        <div class="slot" id="slot-glove"><span>장갑</span><div class="name">-</div></div>
-        <div class="slot" id="slot-neck"><span>목걸이</span><div class="name">-</div></div>
-        <div class="slot" id="slot-wrist"><span>손목</span><div class="name">-</div></div>
-        <div class="slot" style="border-color:var(--gold);"><span>피자</span><div id="pot-count">2</div></div>
+    <div class="equip-grid">
+        <div class="slot" id="slot-weapon"><span>WEAPON</span><div class="name">-</div></div>
+        <div class="slot" id="slot-hat"><span>HAT</span><div class="name">-</div></div>
+        <div class="slot" id="slot-top"><span>TOP</span><div class="name">-</div></div>
+        <div class="slot" id="slot-bottom"><span>BOTTOM</span><div class="name">-</div></div>
+        <div class="slot" id="slot-glove"><span>GLOVE</span><div class="name">-</div></div>
+        <div class="slot" id="slot-neck"><span>NECK</span><div class="name">-</div></div>
+        <div class="slot" id="slot-wrist"><span>WRIST</span><div class="name">-</div></div>
+        <div class="slot" onclick="toggleBook()" style="cursor:pointer; background: #080808;"><span>ARCHIVE</span><div class="name" style="color:#fff">VIEW</div></div>
     </div>
-
-    <div style="background:#000; padding:15px; border-radius:15px; border:1px solid #333; margin-bottom:10px; text-align:center;">
-        <div id="m-name" style="font-weight:bold; font-size:16px;">빌런 찾는 중...</div>
-        <div id="m-skill" style="color:var(--danger); font-size:11px; margin-bottom:5px;">-</div>
-        <div class="hp-bar"><div id="m-hp-fill" class="hp-fill" style="background:var(--danger); width:100%;"></div></div>
-    </div>
-
-    <div class="hp-bar" style="background:#333;"><div id="p-hp-fill" class="hp-fill" style="background:#fff; width:100%;"></div></div>
-    <button onclick="usePotion()">🍕 피자 먹기 (멘탈 회복)</button>
 
     <div id="log-window"></div>
-    <button class="btn-book" onclick="toggleBook()">📊 상세 도감 열기</button>
 </div>
 
 <script src="villains.js"></script>
@@ -92,24 +122,17 @@
     let p = { lv:1, hp:100, atk:10, pot:2, stage:0, book:{}, eq:{}, isBookOpen: false };
     let m = null;
 
-    const init = () => {
-        initBookUI();
-        spawn();
-        setInterval(tick, 1000);
-        updateUI();
-    };
+    const init = () => { initBookUI(); spawn(); setInterval(tick, 1000); updateUI(); };
 
     const initBookUI = () => {
         const grid = document.getElementById('book-grid');
         grid.innerHTML = "";
-        VILLAINS_DATA.forEach((group, gIdx) => {
-            group.forEach(v => {
-                const div = document.createElement('div');
-                div.className = "book-item";
-                div.id = `book-${v.name}`;
-                div.innerText = `[G${gIdx+1}] ???`;
-                grid.appendChild(div);
-            });
+        VILLAINS_DATA.flat().forEach(v => {
+            const div = document.createElement('div');
+            div.className = "book-item";
+            div.id = `book-${v.name}`;
+            div.innerText = "· · ·";
+            grid.appendChild(div);
         });
     };
 
@@ -125,6 +148,17 @@
         const raw = VILLAINS_DATA[p.stage][Math.floor(Math.random()*10)];
         const g = 1+(p.lv*0.15);
         m = { ...raw, curHp: Math.floor(raw.hp*g), maxHp: Math.floor(raw.hp*g), curAtk: Math.floor(raw.atk*g) };
+        
+        // 보스 배경 강조
+        const card = document.getElementById('m-card');
+        const nameEl = document.getElementById('m-name');
+        if(m.isBoss) {
+            card.classList.add('boss-active');
+            nameEl.className = 'grade-unique';
+        } else {
+            card.classList.remove('boss-active');
+            nameEl.className = '';
+        }
         updateUI();
     };
 
@@ -133,28 +167,22 @@
         m.curHp -= getAtk();
         if(m.curHp <= 0) { win(); return; }
         p.hp -= m.curAtk;
-        addLog(`💢 ${m.name}: -${m.curAtk} 피해`);
         if(p.hp <= 0) { 
-            document.getElementById('death-reason').innerText = `${m.name}: "${m.killMsg}"`;
+            document.getElementById('death-reason').innerText = m.killMsg;
             document.getElementById('game-over').style.display = 'flex'; 
         }
         updateUI();
     };
 
     const win = () => {
-        addLog(`<span style="color:var(--rare)">✨ ${m.name} 극복!</span>`);
-        p.book[m.name] = true; 
-        p.lv++; p.atk += 2;
-        
-        // 도감 UI 업데이트
+        p.book[m.name] = true; p.lv++; p.atk += 2;
         const bookEl = document.getElementById(`book-${m.name}`);
         if(bookEl) { bookEl.innerText = m.name; bookEl.classList.add('unlocked'); }
 
         const drop = ITEM_SYSTEM.generateDrop(m, p.stage);
         if(drop && (!p.eq[drop.slot] || p.eq[drop.slot].val < drop.val)) {
             p.eq[drop.slot] = drop;
-            let color = drop.grade === 'unique' ? 'var(--unique)' : (drop.grade === 'rare' ? 'var(--rare)' : '#fff');
-            addLog(`<span style="color:${color}">🎁 [${drop.grade.toUpperCase()}] ${drop.name} 장착!</span>`);
+            addLog(`Acquired ${drop.name.toUpperCase()}`);
         }
         if(Math.random()<0.5) p.pot++;
         if(VILLAINS_DATA[p.stage].every(v=>p.book[v.name]) && p.stage < 4) p.stage++;
@@ -164,14 +192,14 @@
     const usePotion = () => {
         if(p.pot<=0) return;
         p.pot--; p.hp = Math.min(getMaxHP(), p.hp + Math.floor(getMaxHP()*0.5));
-        addLog(`🍕 피자 회복 완료!`); updateUI();
+        updateUI();
     };
 
     const addLog = (msg) => {
         const log = document.getElementById('log-window');
-        const d = document.createElement('div'); d.innerHTML = msg;
+        const d = document.createElement('div'); d.innerText = `+ ${msg}`;
         log.insertBefore(d, log.firstChild);
-        if(log.childNodes.length > 15) log.lastChild.remove();
+        if(log.childNodes.length > 5) log.lastChild.remove();
     };
 
     const updateUI = () => {
@@ -179,21 +207,23 @@
         const collected = Object.keys(p.book).length;
         document.getElementById('p-lv').innerText = p.lv;
         document.getElementById('p-atk-text').innerText = getAtk();
-        document.getElementById('p-hp-text').innerText = `${Math.max(0,p.hp)}/${max}`;
+        document.getElementById('p-hp-text').innerText = `${Math.max(0,p.hp)} / ${max}`;
         document.getElementById('p-hp-fill').style.width = (p.hp/max*100) + "%";
         document.getElementById('m-name').innerText = m.name;
-        document.getElementById('m-skill').innerText = `기술: ${m.skill}`;
+        document.getElementById('m-skill').innerText = m.skill;
         document.getElementById('m-hp-fill').style.width = (m.curHp/m.maxHp*100) + "%";
         document.getElementById('col-count').innerText = collected;
         document.getElementById('progress-fill').style.width = (collected/50*100) + "%";
         document.getElementById('pot-count').innerText = p.pot;
-        
-        const stageNames = ["일상의 시련", "사회의 쓴맛", "사내 정치", "현실의 벽", "사회적 멸망"];
-        document.getElementById('stage-text').innerText = `STAGE ${p.stage + 1}: ${stageNames[p.stage]}`;
+        document.getElementById('stage-text').innerText = `STAGE 0${p.stage + 1}`;
 
         ITEM_SYSTEM.slots.forEach(s => {
             const el = document.getElementById(`slot-${s}`);
-            if(p.eq[s]) { el.querySelector('.name').innerText = p.eq[s].name; el.className = `slot ${p.eq[s].grade}`; }
+            const nameEl = el.querySelector('.name');
+            if(p.eq[s]) { 
+                nameEl.innerText = p.eq[s].name;
+                nameEl.className = `name grade-${p.eq[s].grade}`;
+            }
         });
     };
     window.onload = init;
