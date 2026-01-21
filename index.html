@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VILLAIN HUNTER : STAGE UNLOCK</title>
+    <title>VILLAIN HUNTER : VISUAL EDITION</title>
     <style>
         :root {
             --bg-color: #0c0c0c; --panel-bg: #1a1a1a; --text-main: #eeeeee;
@@ -18,44 +18,54 @@
         .book-progress-bg { width: 100%; height: 8px; background: #222; border-radius: 4px; overflow: hidden; margin: 5px 0; }
         #book-progress-fill { width: 0%; height: 100%; background: linear-gradient(90deg, #ff0080, var(--gold)); transition: width 0.5s; }
 
+        /* 상세 스테이터스 패널 */
+        .status-panel { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; background: #000; padding: 12px; border-radius: 10px; margin-bottom: 15px; border: 1px solid #333; }
+        .stat-item { display: flex; justify-content: space-between; font-size: 12px; }
+        .stat-label { color: #888; }
+        .stat-val { color: var(--gold); font-weight: bold; }
+
         .equip-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 15px; }
-        .equip-slot { background: #000; border: 1px solid #444; padding: 6px; border-radius: 8px; text-align: center; font-size: 10px; height: 65px; display: flex; flex-direction: column; justify-content: center; overflow: hidden; }
-        .equip-slot span { color: #888; display: block; margin-bottom: 2px; font-size: 9px; }
-        .equip-name { color: #fff; font-weight: bold; line-height: 1.1; word-break: keep-all; font-size: 10px; }
+        .equip-slot { background: #111; border: 1px solid #444; padding: 6px; border-radius: 8px; text-align: center; font-size: 10px; height: 60px; display: flex; flex-direction: column; justify-content: center; }
+        .equip-slot span { color: #666; display: block; font-size: 9px; }
+        .equip-name { color: #fff; font-weight: bold; font-size: 10px; margin-top: 2px; }
 
         .panel { background: rgba(255,255,255,0.05); border-radius: 12px; padding: 15px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1); }
-        .hp-bar-bg { width: 100%; height: 12px; background: #222; margin: 8px 0; border-radius: 6px; overflow: hidden; border: 1px solid #333; }
+        .hp-bar-bg { width: 100%; height: 14px; background: #222; margin: 8px 0; border-radius: 7px; overflow: hidden; border: 1px solid #333; position: relative; }
         .hp-fill { height: 100%; transition: width 0.3s; }
+        .hp-text { position: absolute; width: 100%; text-align: center; font-size: 9px; font-weight: bold; line-height: 14px; color: #fff; text-shadow: 1px 1px 2px #000; }
         
         button { background: #ffffff; color: #000000; border: none; padding: 12px; cursor: pointer; font-weight: 900; border-radius: 8px; width: 100%; font-size: 14px; }
-        .btn-small { width: auto; padding: 4px 10px; font-size: 10px; background: var(--gold); border: none; font-weight: bold; }
+        .btn-heal { background: #e74c3c; color: #fff; }
+        .btn-heal:disabled { background: #444; color: #888; cursor: not-allowed; }
 
-        #log-window { height: 120px; overflow-y: auto; font-size: 12px; color: #bbb; padding: 10px; background: #000; border-radius: 10px; border: 1px solid #333; margin-top: 10px; }
-        .log-entry { margin-bottom: 4px; border-bottom: 1px solid #111; }
+        #log-window { height: 100px; overflow-y: auto; font-size: 11px; color: #bbb; padding: 10px; background: #000; border-radius: 10px; border: 1px solid #333; margin-top: 10px; }
+        .log-entry { margin-bottom: 3px; border-bottom: 1px solid #111; }
         
         .modal { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 100; background: rgba(0,0,0,0.95); flex-direction: column; align-items: center; justify-content: center; border-radius: 20px; padding: 20px; box-sizing: border-box; }
-        #book-modal { overflow-y: auto; }
-        .book-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; width: 100%; }
+        .book-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; width: 100%; max-height: 300px; overflow-y: auto; }
         .book-item { padding: 5px; background: #222; border-radius: 4px; font-size: 10px; border: 1px solid #333; color: #444; }
         .book-item.unlocked { color: #fff; border-color: var(--unique); }
-        .book-item.rare-unlocked { border-color: var(--epic); color: var(--epic); font-weight: bold; }
         
         .skill-name { color: var(--danger); font-weight: bold; }
-        .stage-notice { color: var(--unique); font-size: 12px; font-weight: bold; }
+
+        /* [NEW] 빌런 이미지 스타일 */
+        #monster-image-container { text-align: center; margin-bottom: 15px; }
+        #monster-image { width: 120px; height: 120px; object-fit: contain; border-radius: 8px; border: 2px solid var(--danger); background: #000; }
+        #monster-image.rare { border-color: var(--gold); } /* 레어 빌런 테두리 */
     </style>
 </head>
 <body>
 
 <div id="game-container">
     <div id="game-over" class="modal">
-        <h1 style="color:var(--danger); font-size: 32px;">MENTAL BREAK</h1>
-        <div id="killer-name" style="color: #fff; margin-bottom: 10px;"></div>
-        <div id="death-quote" style="font-style: italic; color: #888; margin-bottom: 20px;"></div>
-        <button onclick="location.reload()">다시 시작</button>
+        <h1 style="color:var(--danger);">MENTAL BREAK</h1>
+        <div id="killer-name" style="color: #fff;"></div>
+        <div id="death-quote" style="font-style: italic; color: #888; margin: 15px 0;"></div>
+        <button onclick="location.reload()">새 이력서 던지기</button>
     </div>
 
     <div id="book-modal" class="modal">
-        <h2 style="color:var(--gold);">전체 빌런 도감</h2>
+        <h2 style="color:var(--gold);">빌런 도감</h2>
         <div class="book-grid" id="book-grid"></div>
         <button onclick="toggleBook()" style="margin-top: 15px;">닫기</button>
     </div>
@@ -63,121 +73,120 @@
     <div class="book-status-bar">
         <div style="display:flex; justify-content:space-between; align-items: flex-end;">
             <div>
-                <span class="stage-notice" id="current-stage-text">STAGE 1: 일상의 역경</span><br>
+                <span style="color:var(--unique); font-size:11px;" id="current-stage-text">STAGE 1</span><br>
                 <span style="font-size:18px; font-weight:900; color:var(--gold);">COLLECT <span id="book-main-count">0</span>/50</span>
             </div>
-            <div id="player-title" style="font-size:11px; color:var(--unique); border:1px solid var(--unique); padding:2px 5px; border-radius:4px;">신입 사원</div>
+            <div id="player-title" style="font-size:11px; color:var(--unique);">신입 사원</div>
         </div>
         <div class="book-progress-bg"><div id="book-progress-fill"></div></div>
-        <div style="font-size:9px; color:#777; text-align:right;">*현재 그룹 10종 수집 시 다음 스테이지 해금</div>
+    </div>
+
+    <div class="status-panel">
+        <div class="stat-item"><span class="stat-label">Lv.</span><span class="stat-val" id="st-lv">1</span></div>
+        <div class="stat-item"><span class="stat-label">처치수</span><span class="stat-val" id="st-kills">0</span></div>
+        <div class="stat-item"><span class="stat-label">공격력</span><span class="stat-val" id="st-atk">10</span></div>
+        <div class="stat-item"><span class="stat-label">치명타</span><span class="stat-val" id="st-crit">5%</span></div>
+        <div class="stat-item"><span class="stat-label">회피율</span><span class="stat-val" id="st-dodge">5%</span></div>
+        <div class="stat-item"><span class="stat-label">소지금</span><span class="stat-val" id="st-gold">0</span></div>
+    </div>
+
+    <div class="equip-grid">
+        <div class="equip-slot"><span>무기</span><div class="equip-name" id="eq-weapon">-</div></div>
+        <div class="equip-slot"><span>모자</span><div class="equip-name" id="eq-hat">-</div></div>
+        <div class="equip-slot"><span>상의</span><div class="equip-name" id="eq-top">-</div></div>
+        <div class="equip-slot"><span>하의</span><div class="equip-name" id="eq-bottom">-</div></div>
+        <div class="equip-slot"><span>장갑</span><div class="equip-name" id="eq-glove">-</div></div>
+        <div class="equip-slot"><span>목걸이</span><div class="equip-name" id="eq-neck">-</div></div>
+        <div class="equip-slot"><span>손목</span><div class="equip-name" id="eq-wrist">-</div></div>
+        <div class="equip-slot" style="border-color:var(--gold);"><span style="color:var(--gold)">포션</span><div class="equip-name" id="heal-count">0</div></div>
     </div>
 
     <div class="panel">
-        <div class="equip-grid">
-            <div class="equip-slot"><span>공격</span><div class="equip-name" id="eq-weapon">맨주먹</div></div>
-            <div class="equip-slot"><span>모자</span><div class="equip-name" id="eq-hat">-</div></div>
-            <div class="equip-slot"><span>상의</span><div class="equip-name" id="eq-top">-</div></div>
-            <div class="equip-slot"><span>하의</span><div class="equip-name" id="eq-bottom">-</div></div>
-            <div class="equip-slot"><span>장갑</span><div class="equip-name" id="eq-glove">-</div></div>
-            <div class="equip-slot"><span>목걸이</span><div class="equip-name" id="eq-neck">-</div></div>
-            <div class="equip-slot"><span>손목</span><div class="equip-name" id="eq-wrist">-</div></div>
-            <div class="equip-slot" style="border-color: var(--gold);"><span>LV</span><div class="equip-name" id="lv-display">1</div></div>
+        <div class="hp-bar-bg">
+            <div id="p-hp-bar" class="hp-fill" style="background:#fff; width:100%;"></div>
+            <div class="hp-text" id="p-hp-text">100 / 100</div>
         </div>
-        <div style="display:flex; justify-content:space-between; font-size: 11px; color: #aaa;">
-            <span id="stat-atk">말빨: 10</span>
-            <span id="stat-crit">치명: 5%</span>
-            <span id="stat-dodge">회피: 5%</span>
-        </div>
-        <div class="hp-bar-bg"><div id="p-hp-bar" class="hp-fill" style="background:#fff; width:100%;"></div></div>
-        <button id="heal-btn" onclick="usePotion()" style="background:#444; color:#fff; padding:8px;">🍕 회복 아이템 <span id="heal-count">(0)</span></button>
+        <button id="heal-btn" class="btn-heal" onclick="usePotion()">🍕 피자 먹기 (회복)</button>
     </div>
 
-    <div class="panel" style="border-left: 4px solid var(--danger); background: rgba(255,0,0,0.1);">
-        <div style="display:flex; justify-content:space-between; align-items: center;">
-            <div id="m-name" style="font-weight:900; font-size: 15px;">빌런 탐색 중...</div>
-            <div id="m-hp-text" style="font-size: 11px; color: #888;">0 / 0</div>
+    <div class="panel" style="border-left: 4px solid var(--danger);">
+        <div id="monster-image-container">
+            <img id="monster-image" src="" alt="빌런 이미지">
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items: center; margin-bottom:5px;">
+            <div id="m-name" style="font-weight:900;">빌런 찾는 중...</div>
+            <div id="m-hp-val" style="font-size: 11px; color: #888;">0 / 0</div>
         </div>
         <div class="hp-bar-bg"><div id="m-hp-bar" class="hp-fill" style="background:var(--danger); width:100%;"></div></div>
     </div>
 
     <div id="log-window"></div>
-    <button onclick="toggleBook()" style="margin-top:10px; font-size:11px; background:none; color:#666; border:1px solid #333;">상세 도감 보기</button>
+    <button onclick="toggleBook()" style="margin-top:10px; font-size:11px; background:none; color:#666; border:1px solid #333; padding:5px;">상세 도감 열기</button>
 </div>
 
 <script>
-    // 50종 빌런을 10마리씩 5그룹으로 분리
     const MONSTER_GROUPS = [
-        [ // Group 1: 일상의 역경 (LV 1~10 추천)
-            { name: "출근 대리님", hp: 60, atk: 6, skill: "서류 던지기", killMsg: "거 김대리, 이 서류 오늘까지야.", unique: {type: 'weapon', name: "★ 대리님의 서류뭉치", val: 40} },
-            { name: "스팸 전화 070", hp: 45, atk: 5, skill: "꿀잠 방해", killMsg: "낮잠 자는데 대출 권유라니.", unique: {type: 'wrist', name: "★ 스팸 차단기", val: 15} },
-            { name: "데이터 없는 폰", hp: 50, atk: 8, skill: "오프라인 고립", killMsg: "로딩 스피너만 10분째.", unique: {type: 'wrist', name: "★ 무제한 에그", val: 20} },
-            { name: "USB 반대로 끼움", hp: 50, atk: 5, skill: "단자 입구막기", killMsg: "뒤집어도 안 들어가요.", unique: {type: 'glove', name: "★ C타입 젠더", val: 15} },
-            { name: "안 씻은 텀블러", hp: 60, atk: 10, skill: "곰팡이 향기", killMsg: "커피에서 된장 맛이 납니다.", unique: {type: 'glove', name: "★ 살균 세척 솔", val: 20} },
-            { name: "눅눅한 시리얼", hp: 45, atk: 5, skill: "종이 식감", killMsg: "종이 씹는 줄 알았습니다.", unique: {type: 'neck', name: "★ 밀폐 용기", val: 15} },
-            { name: "안터지는 WIFI", hp: 70, atk: 12, skill: "무한 로딩", killMsg: "비밀번호가 틀렸대요.", unique: {type: 'wrist', name: "★ 와이파이 증폭기", val: 25} },
-            { name: "침대 밑 리모컨", hp: 75, atk: 10, skill: "구석 숨기기", killMsg: "결국 일어나서 껐습니다.", unique: {type: 'hat', name: "★ 뇌파 조종 밴드", val: 20} },
-            { name: "빨간불 횡단보도", hp: 80, atk: 12, skill: "버스 놓치기", killMsg: "버스가 방금 떠났습니다.", unique: {type: 'bottom', name: "★ 런닝화", val: 30} },
-            { name: "광고 스킵 불가", hp: 85, atk: 13, skill: "강제 15초", killMsg: "15초가 15년 같았습니다.", unique: {type: 'top', name: "★ 프리미엄 멤버십", val: 30} }
+        [
+            { name: "출근 대리님", hp: 60, atk: 6, skill: "서류 던지기", killMsg: "거 김대리, 이 서류 오늘까지야." },
+            { name: "스팸 전화 070", hp: 45, atk: 5, skill: "꿀잠 방해", killMsg: "낮잠 자는데 대출 권유라니." },
+            { name: "데이터 없는 폰", hp: 50, atk: 8, skill: "오프라인 고립", killMsg: "로딩 스피너만 10분째." },
+            { name: "USB 반대로 끼움", hp: 50, atk: 5, skill: "단자 입구막기", killMsg: "뒤집어도 안 들어가요." },
+            { name: "안 씻은 텀블러", hp: 60, atk: 10, skill: "곰팡이 향기", killMsg: "커피에서 된장 맛이 납니다." },
+            { name: "눅눅한 시리얼", hp: 45, atk: 5, skill: "종이 식감", killMsg: "종이 씹는 줄 알았습니다." },
+            { name: "안터지는 WIFI", hp: 70, atk: 12, skill: "무한 로딩", killMsg: "비밀번호가 틀렸대요." },
+            { name: "침대 밑 리모컨", hp: 75, atk: 10, skill: "구석 숨기기", killMsg: "결국 일어나서 껐습니다." },
+            { name: "빨간불 횡단보도", hp: 80, atk: 12, skill: "버스 놓치기", killMsg: "버스가 방금 떠났습니다." },
+            { name: "광고 스킵 불가", hp: 85, atk: 13, skill: "강제 15초", killMsg: "15초가 15년 같았습니다." }
         ],
-        [ // Group 2: 사회의 매운맛
-            { name: "법카 부장님", hp: 120, atk: 18, skill: "갑작스런 회식", killMsg: "오늘 회식은 삼겹살이다!", unique: {type: 'neck', name: "★ 법인카드", val: 40} },
-            { name: "라떼 차장님", hp: 140, atk: 20, skill: "나 때는 말이야", killMsg: "나 때는 말이야...", unique: {type: 'hat', name: "★ 전용 찻잔", val: 45} },
-            { name: "이어폰 한쪽 고장", hp: 130, atk: 15, skill: "모노 사운드", killMsg: "왼쪽 귀가 외롭습니다.", unique: {type: 'hat', name: "★ 골전도 헤드셋", val: 40} },
-            { name: "카공족의 눈총", hp: 110, atk: 15, skill: "한숨 쉬기", killMsg: "키보드 소리가 죄인가요?", unique: {type: 'glove', name: "★ 무소음 스킨", val: 30} },
-            { name: "보이스 피싱", hp: 150, atk: 22, skill: "검찰 사칭", killMsg: "서울 중앙 지검이라면서요.", unique: {type: 'neck', name: "★ 통화 녹음기", val: 40} },
-            { name: "무한 로딩 지옥", hp: 160, atk: 20, skill: "뱅글뱅글 저주", killMsg: "빙글빙글 지옥.", unique: {type: 'wrist', name: "★ 기가 인터넷", val: 35} },
-            { name: "안 지워지는 얼룩", hp: 145, atk: 18, skill: "마라탕 공격", killMsg: "최애 셔츠에 마라탕을...", unique: {type: 'top', name: "★ 얼룩 제거 스틱", val: 45} },
-            { name: "안 열리는 뚜껑", hp: 155, atk: 16, skill: "진공 밀착", killMsg: "고무장갑 껴도 안 열려요.", unique: {type: 'glove', name: "★ 아귀힘 장갑", val: 45} },
-            { name: "겨울 정전기", hp: 170, atk: 25, skill: "찌릿찌릿", killMsg: "손끝이 타들어갑니다.", unique: {type: 'glove', name: "★ 절연 장갑", val: 50} },
-            { name: "만원 버스 백팩", hp: 180, atk: 22, skill: "진로 방해", killMsg: "가방에 밀려 못 내렸습니다.", unique: {type: 'top', name: "★ 백팩 방어 흉갑", val: 50} }
+        [
+            { name: "법카 부장님", hp: 120, atk: 18, skill: "갑작스런 회식", killMsg: "오늘 회식은 삼겹살이다!" },
+            { name: "라떼 차장님", hp: 140, atk: 20, skill: "나 때는 말이야", killMsg: "나 때는 말이야..." },
+            { name: "이어폰 한쪽 고장", hp: 130, atk: 15, skill: "모노 사운드", killMsg: "왼쪽 귀가 외롭습니다." },
+            { name: "카공족의 눈총", hp: 110, atk: 15, skill: "한숨 쉬기", killMsg: "키보드 소리가 죄인가요?" },
+            { name: "보이스 피싱", hp: 150, atk: 22, skill: "검찰 사칭", killMsg: "서울 중앙 지검이라면서요." },
+            { name: "무한 로딩 지옥", hp: 160, atk: 20, skill: "뱅글뱅글 저주", killMsg: "빙글빙글 지옥." },
+            { name: "안 지워지는 얼룩", hp: 145, atk: 18, skill: "마라탕 공격", killMsg: "최애 셔츠에 마라탕을..." },
+            { name: "안 열리는 뚜껑", hp: 155, atk: 16, skill: "진공 밀착", killMsg: "고무장갑 껴도 안 열려요." },
+            { name: "겨울 정전기", hp: 170, atk: 25, skill: "찌릿찌릿", killMsg: "손끝이 타들어갑니다." },
+            { name: "만원 버스 백팩", hp: 180, atk: 22, skill: "진로 방해", killMsg: "가방에 밀려 못 내렸습니다." }
         ],
-        [ // Group 3: 멘탈 붕괴의 서막
-            { name: "퇴근직전 팀장님", hp: 350, atk: 45, skill: "이것만 하고 가", killMsg: "아 가기 전에 이것만 좀...", unique: {type: 'wrist', name: "★ 칼퇴 워치", val: 70} },
-            { name: "읽씹 썸녀", hp: 320, atk: 50, skill: "안 읽음 1", killMsg: "숫자 1의 압박.", unique: {type: 'neck', name: "★ 멘탈 복구 사진", val: 70} },
-            { name: "층간소음 망치", hp: 380, atk: 55, skill: "천장 드릴링", killMsg: "윗집에 망치질 신이 삽니다.", unique: {type: 'hat', name: "★ 차단 헬멧", val: 80} },
-            { name: "비오는 흰 운동화", hp: 340, atk: 40, skill: "진흙탕 스플래시", killMsg: "신발이 늪이 되었습니다.", unique: {type: 'bottom', name: "★ 방수 코팅", val: 75} },
-            { name: "비번 5회 오류", hp: 400, atk: 60, skill: "로그인 잠금", killMsg: "30초 뒤에 다시 시도하세요.", unique: {type: 'wrist', name: "★ 지문 인식", val: 85} },
-            { name: "고장난 키보드", hp: 420, atk: 55, skill: "엔터키 먹통", killMsg: "엔터키가 빠졌습니다.", unique: {type: 'weapon', name: "★ 청축 키보드", val: 100} },
-            { name: "옆집 택배 오배송", hp: 390, atk: 45, skill: "신선도 하락", killMsg: "냉동식품이 다 녹았습니다.", unique: {type: 'neck', name: "★ 택배 추적기", val: 80} },
-            { name: "중고나라 벽돌", hp: 450, atk: 65, skill: "택배 바꿔치기", killMsg: "아이폰 대신 벽돌이 옴.", unique: {type: 'weapon', name: "★ 사기꾼 영장", val: 120} },
-            { name: "유통기한 지난 우유", hp: 430, atk: 70, skill: "복통 유발", killMsg: "장이 꼬여버렸습니다.", unique: {type: 'bottom', name: "★ 유산균 보호복", val: 90} },
-            { name: "조별과제 프리라이더", hp: 480, atk: 55, skill: "잠수 타기", killMsg: "저 할아버지가 편찮으셔서...", unique: {type: 'top', name: "★ 무임승차 거부권", val: 100} }
+        [ 
+            {name:"퇴근직전 팀장님", hp:400, atk:50, skill:"이것만 하고 가", killMsg:"..."}, 
+            {name:"읽씹 썸녀", hp:350, atk:55, skill:"숫자 1", killMsg:"..."}, 
+            {name:"층간소음 망치", hp:380, atk:60, skill:"드릴링", killMsg:"..."}, 
+            {name:"비오는 흰운동화", hp:400, atk:45, skill:"진흙", killMsg:"..."}, 
+            {name:"비번 5회오류", hp:420, atk:65, skill:"잠금", killMsg:"..."}, 
+            {name:"고장난 키보드", hp:450, atk:60, skill:"엔터먹통", killMsg:"..."}, 
+            {name:"옆집 택배오배송", hp:400, atk:50, skill:"하락", killMsg:"..."}, 
+            {name:"중고나라 벽돌", hp:500, atk:70, skill:"바꿔치기", killMsg:"..."}, 
+            {name:"유통기한 우유", hp:450, atk:80, skill:"복통", killMsg:"..."}, 
+            {name:"조별과제 빌런", hp:500, atk:60, skill:"잠수", killMsg:"..."}
         ],
-        [ // Group 4: 현실의 공포
-            { name: "새끼발가락 찧음", hp: 1200, atk: 180, skill: "모서리 공격", killMsg: "정신이 아득해집니다.", unique: {type: 'bottom', name: "★ 방지 쿠션", val: 150} },
-            { name: "저장 안한 문서", hp: 1300, atk: 200, skill: "응답 없음", killMsg: "블루스크린은 예고 없이 옵니다.", unique: {type: 'top', name: "★ 자동 저장", val: 160} },
-            { name: "급똥 신호", hp: 1100, atk: 160, skill: "장 뒤틀기", killMsg: "지하철은 급행이었습니다.", unique: {type: 'bottom', name: "★ 괄약근 조절기", val: 140} },
-            { name: "입금 전 클라이언트", hp: 1500, atk: 220, skill: "무한 수정", killMsg: "좀 더 화려하고 심플하게!", unique: {type: 'weapon', name: "★ 진짜최종.psd", val: 200} },
-            { name: "공공장소 야동스피커", hp: 1800, atk: 300, skill: "강제 수치사", killMsg: "모든 시선이 당신에게...", unique: {type: 'hat', name: "★ 수치사 방지가면", val: 250} },
-            { name: "잘못 보낸 카톡", hp: 1400, atk: 190, skill: "전송 취소 실패", killMsg: "부장님께 '사랑해'라고 보냄.", unique: {type: 'wrist', name: "★ 취소 버튼", val: 150} },
-            { name: "깜빡한 에어컨", hp: 1600, atk: 150, skill: "전기료 폭탄", killMsg: "고지서에 0이 하나 더...", unique: {type: 'bottom', name: "★ 에너지 바지", val: 180} },
-            { name: "👑 월요일 8:59AM", hp: 3000, atk: 350, skill: "알람 지옥", killMsg: "지옥의 5일이 시작된다.", unique: {type: 'weapon', name: "★ 월요일 파쇄기", val: 400} },
-            { name: "👑 윈도우 업데이트", hp: 3200, atk: 300, skill: "강제 재부팅", killMsg: "업데이트는 예고가 없죠.", unique: {type: 'glove', name: "★ 강제 종료권", val: 350} },
-            { name: "👑 명절 잔소리", hp: 2800, atk: 280, skill: "결혼/취업 콤보", killMsg: "너는 언제 잘되니?", unique: {type: 'hat', name: "★ 차단 이어플러그", val: 300} }
+        [ 
+            {name:"새끼발가락 찧음", hp:1500, atk:200, skill:"모서리", killMsg:"..."}, 
+            {name:"저장 안한 문서", hp:1600, atk:220, skill:"응답없음", killMsg:"..."}, 
+            {name:"급똥 신호", hp:1400, atk:180, skill:"뒤틀기", killMsg:"..."}, 
+            {name:"입금 전 클라이언트", hp:1800, atk:250, skill:"수정", killMsg:"..."}, 
+            {name:"공공장소 야동스피커", hp:2000, atk:350, skill:"수치사", killMsg:"..."}, 
+            {name:"잘못 보낸 카톡", hp:1500, atk:220, skill:"취소실패", killMsg:"..."}, 
+            {name:"깜빡한 에어컨", hp:1700, atk:180, skill: "전기세", killMsg:"..."}, 
+            {name:"👑 월요일 8:59AM", hp:3500, atk:400, skill:"알람", killMsg:"..."}, 
+            {name:"👑 윈도우 업데이트", hp:3800, atk:350, skill:"재부팅", killMsg:"..."}, 
+            {name:"👑 명절 잔소리", hp:3200, atk:300, skill:"취업콤보", killMsg:"..."}
         ],
-        [ // Group 5: 사회적 종말
-            { name: "👑 예비군 통지서", hp: 6000, atk: 500, skill: "강제 입소", killMsg: "축하합니다. 동원입니다.", unique: {type: 'top', name: "★ 개구리 전투복", val: 500} },
-            { name: "👑 누진세 고지서", hp: 7500, atk: 600, skill: "요금 폭격", killMsg: "여름은 시원했지만...", unique: {type: 'bottom', name: "★ 전원 차단기", val: 600} },
-            { name: "👑 액정 파손", hp: 7000, atk: 550, skill: "거미줄 크랙", killMsg: "30만원이 날아갔습니다.", unique: {type: 'wrist', name: "★ 방탄 유리", val: 550} },
-            { name: "👑 자니? 전애인", hp: 5500, atk: 700, skill: "추억 팔이", killMsg: "새벽 2시엔 자야 합니다.", unique: {type: 'neck', name: "★ 번호 변경권", val: 500} },
-            { name: "👑 서버 점검 중", hp: 6500, atk: 450, skill: "무한 연장", killMsg: "점검은 늘 길어집니다.", unique: {type: 'glove', name: "★ 점심 보장권", val: 450} },
-            { name: "👑 부장님 개인기", hp: 6200, atk: 480, skill: "아재 개그", killMsg: "안 웃으면 평가 하락.", unique: {type: 'top', name: "★ 리액션 생성기", val: 500} },
-            { name: "👑 비상금 걸림", hp: 8000, atk: 800, skill: "자금 압수", killMsg: "그걸 왜 거기 숨겼니.", unique: {type: 'neck', name: "★ 이중 금고", val: 800} },
-            { name: "👑 퇴사 서류 반려", hp: 10000, atk: 1000, skill: "종신 계약", killMsg: "나갈 땐 마음대로 못 나간단다.", unique: {type: 'weapon', name: "★ 전설의 사직서", val: 1500} },
-            { name: "👑 대출 이자 인상", hp: 12000, atk: 1200, skill: "영끌 파산", killMsg: "이자만 내다 인생 끝납니다.", unique: {type: 'neck', name: "★ 금리 동결권", val: 1200} },
-            { name: "👑 최종 보스: 인사팀장", hp: 20000, atk: 1500, skill: "권고사직 고지", killMsg: "그동안 수고 많으셨습니다.", unique: {type: 'top', name: "★ 무적의 건물주 증명", val: 2000} }
+        [ 
+            {name:"👑 예비군 통지서", hp:8000, atk:600, skill:"입소", killMsg:"..."}, 
+            {name:"👑 누진세 고지서", hp:9000, atk:700, skill:"폭격", killMsg:"..."}, 
+            {name:"👑 액정 파손", hp:8500, atk:650, skill:"크랙", killMsg:"..."}, 
+            {name:"👑 자니? 전애인", hp:7000, atk:800, skill:"추억팔이", killMsg:"..."}, 
+            {name:"👑 서버 점검 중", hp:8000, atk:500, skill:"연장", killMsg:"..."}, 
+            {name:"👑 부장님 개인기", hp:7500, atk:550, skill:"아재개그", killMsg:"..."}, 
+            {name:"👑 비상금 걸림", hp:10000, atk:900, skill:"압수", killMsg:"..."}, 
+            {name:"👑 퇴사 서류 반려", hp:15000, atk:1200, skill:"종신", killMsg:"..."}, 
+            {name:"👑 대출 이자 인상", hp:18000, atk:1500, skill:"파산", killMsg:"..."}, 
+            {name:"👑 최종 보스: 인사팀장", hp:30000, atk:2000, skill:"권고사직", killMsg:"..."}
         ]
     ];
-
-    const ITEM_NAMES = {
-        weapon: ["빈 물병", "잘 갈린 연필", "티스푼", "전공서적", "팩트 폭격기", "금융치료 주문서", "로또 당첨권", "건물 등기", "절대적 아니오"],
-        hat: ["구멍난 비니", "사회적 가면", "강철 멘탈 투구", "해탈의 서클릿", "자유의 광휘"],
-        top: ["늘어난 티셔츠", "월급쟁이 갑옷", "비난 반사 패딩", "연봉협상 가호", "무적의 로브"],
-        bottom: ["추리닝", "인내심의 타이즈", "탈출용 러닝 바지", "하늘을 걷는 바지", "불멸의 출근 바지"],
-        glove: ["목장갑", "광클 장갑", "신의 손가락", "심연의 패드", "우주의 조율자"],
-        neck: ["낡은 사원증", "행운의 클로버", "요정의 눈물", "영겁의 보너스", "운명의 열쇠"],
-        wrist: ["손목밴드", "디지털 시계", "스마트 밴드", "티타늄 워치", "운명의 결재 라인"]
-    };
 
     let player = {
         lv: 1, hp: 100, gold: 0, potion: 2, kills: 0, book: {}, currentStage: 0,
@@ -203,30 +212,35 @@
         });
     }
 
-    function checkStage() {
-        // 현재 그룹의 10마리가 모두 도감에 있는지 확인
-        const currentGroup = MONSTER_GROUPS[player.currentStage];
-        const allCleared = currentGroup.every(m => player.book[m.name]);
-        
-        if (allCleared && player.currentStage < 4) {
-            player.currentStage++;
-            addLog(`<span style="color:var(--gold); font-weight:bold;">🎉 STAGE ${player.currentStage + 1} 해금! 새로운 빌런들이 나타납니다!</span>`);
-        }
-    }
-
     function spawn() {
-        // 현재 해금된 스테이지 그룹 내에서 랜덤 스폰
         const pool = MONSTER_GROUPS[player.currentStage];
         const d = pool[Math.floor(Math.random() * pool.length)];
-        const isRare = d.name.includes("👑");
         const growth = 1 + (player.lv * 0.2);
         
-        monster = {
-            ...d, hp: Math.floor(d.hp * growth), max: Math.floor(d.hp * growth),
-            atk: Math.floor(d.atk * growth), isRare: isRare
-        };
+        monster = { ...d, hp: Math.floor(d.hp * growth), max: Math.floor(d.hp * growth), atk: Math.floor(d.atk * growth), isRare: d.name.includes("👑") };
         addLog(`[Stage ${player.currentStage+1}] <b>${monster.name}</b> 출현!`);
         updateUI();
+        generateMonsterImage(monster.name, monster.isRare); // 빌런 이미지 생성
+    }
+
+    // [NEW] 빌런 이미지를 생성하고 표시하는 함수
+    function generateMonsterImage(monsterName, isRare) {
+        const imgElement = document.getElementById('monster-image');
+        imgElement.className = ''; // 기존 클래스 제거
+        imgElement.alt = monsterName;
+
+        // 레어 빌런인 경우 특별한 테두리 클래스 추가
+        if (isRare) {
+            imgElement.classList.add('rare');
+        }
+        // TODO: 실제 이미지 API 연동 시 여기에 이미지 URL 설정 로직 추가
+        // 현재는 임시 이미지로 대체 (없을 경우 빈 이미지)
+        imgElement.src = `https://via.placeholder.com/120?text=${encodeURIComponent(monsterName.replace(/ /g, '+'))}`; // 임시 이미지
+        
+        // 여기에 이미지 생성 요청을 위한 
+        // 태그를 추가
+        // 예: 
+        // 
     }
 
     function getStats() {
@@ -246,66 +260,46 @@
         let s = getStats();
         let critHit = Math.random() * 100 < s.crit;
         monster.hp -= s.atk * (critHit ? 2 : 1);
-        
         if (monster.hp <= 0) { win(); return; }
-
         if (Math.random() * 100 < s.dodge) {
-            addLog(`💨 회피! <span class="skill-name">${monster.skill}</span> 무시.`);
+            addLog(`💨 회피!`);
         } else {
             player.hp -= monster.atk;
-            addLog(`💢 <span class="skill-name">${monster.skill}</span>! -${monster.atk}`);
+            addLog(`💢 -${monster.atk} 피해`);
             if (player.hp <= 0) die();
         }
         updateUI();
     }
 
     function win() {
-        player.kills++; player.lv++; player.book[monster.name] = true;
-        let s = getStats();
-        player.hp = Math.min(s.hp, player.hp + Math.floor(s.hp * 0.4));
-        player.potion++;
+        player.kills++; player.lv++; player.gold += (player.currentStage + 1) * 100;
+        player.book[monster.name] = true;
         
-        addLog(`<span style="color:var(--gold)">[성공]</span> 🍕+1 획득!`);
-        
-        // 도감 업데이트
-        const bookEl = document.getElementById(`book-${monster.name}`);
-        if(bookEl) {
-            bookEl.innerText = monster.name;
-            bookEl.classList.add(monster.isRare ? 'rare-unlocked' : 'unlocked');
+        if (Math.random() < 0.5) {
+            player.potion++;
+            addLog(`<span style="color:var(--gold)">[성공]</span> 🍕 피자 획득!`);
+        } else {
+            addLog(`<span style="color:#888">[성공]</span> 아이템 획득 실패..`);
         }
 
-        checkStage(); // 스테이지 클리어 체크
+        const bookEl = document.getElementById(`book-${monster.name}`);
+        if(bookEl) { bookEl.innerText = monster.name; bookEl.classList.add('unlocked'); }
 
-        if (monster.unique && Math.random() < 0.1) {
-            let u = monster.unique;
-            if (!player.equip[u.type] || player.equip[u.type].val < u.val) {
-                player.equip[u.type] = { name: u.name, val: u.val, isUnique: true };
-                addLog(`<span style="color:var(--unique)">★ 유니크 장착: [${u.name}]</span>`);
-            }
-        } else { dropItem(); }
+        const currentGroup = MONSTER_GROUPS[player.currentStage];
+        if (currentGroup.every(m => player.book[m.name]) && player.currentStage < 4) {
+            player.currentStage++;
+            addLog(`<span style="color:var(--unique)">🎉 STAGE ${player.currentStage+1} UNLOCKED!</span>`);
+        }
         spawn();
     }
 
-    function dropItem() {
-        const types = Object.keys(ITEM_NAMES);
-        const type = types[Math.floor(Math.random() * types.length)];
-        const pool = ITEM_NAMES[type];
-        const tier = Math.min(pool.length - 1, Math.floor(player.lv / 5));
-        const val = (tier + 1) * 20 + player.lv;
-        let newItem = { name: pool[tier], val: val, tier: tier };
-        
-        if (!player.equip[type] || player.equip[type].val < newItem.val) {
-            player.equip[type] = newItem;
-            addLog(`획득: [${newItem.name}]`);
-        }
-    }
-
     function usePotion() {
+        if (player.potion <= 0) return;
         let s = getStats();
-        if (player.potion > 0) {
-            player.potion--; player.hp = Math.min(s.hp, player.hp + Math.floor(s.hp * 0.7));
-            addLog("🍕 멘탈 회복 완료!"); updateUI();
-        }
+        player.potion--;
+        player.hp = Math.min(s.hp, player.hp + Math.floor(s.hp * 0.6));
+        addLog("🍕 피자 섭취! 멘탈 회복.");
+        updateUI();
     }
 
     function die() {
@@ -313,49 +307,41 @@
         document.getElementById('killer-name').innerText = monster.name;
         document.getElementById('death-quote').innerText = `"${monster.killMsg}"`;
         document.getElementById('game-over').style.display = 'flex';
+        updateUI();
     }
+
+    function toggleBook() { bookOpen = !bookOpen; document.getElementById('book-modal').style.display = bookOpen ? 'flex' : 'none'; }
 
     function addLog(msg) {
         const logWin = document.getElementById('log-window');
         const div = document.createElement('div'); div.className = "log-entry";
-        div.innerHTML = msg;
-        logWin.insertBefore(div, logWin.firstChild);
-        if (logWin.childNodes.length > 20) logWin.lastChild.remove();
-    }
-
-    function toggleBook() {
-        bookOpen = !bookOpen;
-        document.getElementById('book-modal').style.display = bookOpen ? 'flex' : 'none';
+        div.innerHTML = msg; logWin.insertBefore(div, logWin.firstChild);
+        if (logWin.childNodes.length > 15) logWin.lastChild.remove();
     }
 
     function updateUI() {
         let s = getStats();
+        document.getElementById('st-lv').innerText = player.lv;
+        document.getElementById('st-kills').innerText = player.kills;
+        document.getElementById('st-atk').innerText = s.atk;
+        document.getElementById('st-crit').innerText = s.crit.toFixed(1) + "%";
+        document.getElementById('st-dodge').innerText = s.dodge.toFixed(1) + "%";
+        document.getElementById('st-gold').innerText = player.gold;
+
         document.getElementById('p-hp-bar').style.width = (player.hp / s.hp * 100) + "%";
-        document.getElementById('m-name').innerText = monster.name;
-        document.getElementById('m-hp-text').innerText = `${Math.max(0, monster.hp)} / ${monster.max}`;
+        document.getElementById('p-hp-text').innerText = `${Math.max(0, player.hp)} / ${s.hp}`;
         document.getElementById('m-hp-bar').style.width = (monster.hp / monster.max * 100) + "%";
-        document.getElementById('stat-atk').innerText = `말빨: ${s.atk}`;
-        document.getElementById('stat-crit').innerText = `치명: ${s.crit.toFixed(1)}%`;
-        document.getElementById('stat-dodge').innerText = `회피: ${s.dodge.toFixed(1)}%`;
-        document.getElementById('lv-display').innerText = player.lv;
-        document.getElementById('heal-count').innerText = `(${player.potion})`;
-        
+        document.getElementById('m-hp-val').innerText = `${Math.max(0, monster.hp)} / ${monster.max}`;
+        document.getElementById('m-name').innerText = monster.name;
+        document.getElementById('heal-count').innerText = player.potion;
+        document.getElementById('heal-btn').disabled = player.potion <= 0;
+
         const count = Object.keys(player.book).length;
         document.getElementById('book-main-count').innerText = count;
         document.getElementById('book-progress-fill').style.width = (count / 50 * 100) + "%";
         
-        const stages = ["일상의 역경", "사회의 매운맛", "멘탈 붕괴의 서막", "현실의 공포", "사회적 종말"];
+        const stages = ["일상의 시련", "사회의 쓴맛", "사내 정치", "현실의 벽", "사회적 멸망"];
         document.getElementById('current-stage-text').innerText = `STAGE ${player.currentStage + 1}: ${stages[player.currentStage]}`;
-
-        for (let t in player.equip) {
-            const el = document.getElementById(`eq-${t}`);
-            const item = player.equip[t];
-            if (item) {
-                el.innerText = item.name;
-                if(item.isUnique) el.style.color = "var(--unique)";
-                else el.style.color = "#fff";
-            }
-        }
     }
 
     window.onload = init;
